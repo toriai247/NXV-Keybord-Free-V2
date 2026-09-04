@@ -1,0 +1,6 @@
+{
+  "name": "NXV Keyboard",
+  "description": "A fast, privacy-first native Android keyboard supporting English, Bangla, Avro phonetic typing, and a dedicated clipboard manager.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
