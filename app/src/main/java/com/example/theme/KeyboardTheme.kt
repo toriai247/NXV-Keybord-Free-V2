@@ -11,7 +11,8 @@ enum class ThemeSpecialIconStyle {
     KAWAII_KITTEN,
     RETRO_MECH,
     REFERENCE_MINIMAL,
-    RGB_NEON
+    RGB_NEON,
+    CAT_3D_SLATE
 }
 
 enum class KeyPopupStyle {
@@ -20,7 +21,8 @@ enum class KeyPopupStyle {
     STRAWBERRY_SWEET,
     KAWAII_KITTY_POPUP,
     RETRO_MECH_POPUP,
-    RGB_NEON_POPUP
+    RGB_NEON_POPUP,
+    CAT_3D_SLATE_POPUP
 }
 
 enum class SpacebarStyle {
@@ -30,7 +32,8 @@ enum class SpacebarStyle {
     KITTY_PAW_BAR,
     RETRO_MECH_SPACE,
     REFERENCE_MINIMAL_SPACE,
-    RGB_NEON_BAR
+    RGB_NEON_BAR,
+    CAT_3D_SLATE_BAR
 }
 
 data class KeyboardPalette(
@@ -405,7 +408,44 @@ object KeyboardThemes {
         )
     )
 
+    // Cat 3D Slate (3D dark slate keycaps, off-white top row, cute 3D cat backspace, cream Enter key)
+    val Cat3dSlate = KeyboardPalette(
+        themeId = "cat_3d_slate",
+        themeName = "Cat 3D Slate",
+        themeDescription = "3D sculpted dark slate keycaps with light top row, cute 3D cat backspace, and cream Enter button",
+        category = "Featured & 3D",
+        keyboardBackground = Color(0xFF232830), // Slate dark casing
+        keyBackground = Color(0xFF3E4652), // Dark slate keycap face
+        keyPressedBackground = Color(0xFF2E353E),
+        keyActionBackground = Color(0xFF3E4652),
+        textColor = Color(0xFFFFFFFF), // Crisp white letters
+        secondaryTextColor = Color(0xFF9EA7B3),
+        accentColor = Color(0xFFF4F5F7), // Off-white cream top row & enter
+        onAccentColor = Color(0xFF282E37), // Dark slate on cream
+        suggestionBarBackground = Color(0xFF21262E), // Sleek header bar
+        suggestionHighlightColor = Color(0xFFE2B040),
+        dividerColor = Color(0x22FFFFFF),
+        keyBorderColor = Color(0x00000000), // Custom drawn 3D canvas
+        keyBorderWidth = 0.dp,
+        keyCornerRadius = 10.dp,
+        keyElevation = 3.5.dp,
+        pressedElevation = 1.dp,
+        specialIconStyle = ThemeSpecialIconStyle.CAT_3D_SLATE,
+        popupStyle = KeyPopupStyle.CAT_3D_SLATE_POPUP,
+        spacebarStyle = SpacebarStyle.CAT_3D_SLATE_BAR,
+        spacebarWatermark = null,
+        showTopRowHints = true,
+        topRowHintColor = Color(0xFF8B95A2),
+        previewColors = listOf(
+            Color(0xFF232830),
+            Color(0xFFF4F5F7),
+            Color(0xFF3E4652),
+            Color(0xFFE2B040)
+        )
+    )
+
     val ALL_THEMES: List<KeyboardPalette> = listOf(
+        Cat3dSlate,
         RgbChroma,
         ReferenceMinimal,
         RetroMech,
@@ -420,6 +460,7 @@ object KeyboardThemes {
 
     fun getPalette(themeName: String): KeyboardPalette {
         return when (themeName.lowercase()) {
+            "cat_3d_slate", "cat_3d", "cat3d", "3d_cat", "jiang_yunxi", "cat_slate" -> Cat3dSlate
             "rgb_neon", "rgb", "chroma", "neon", "rgb_chroma", "rainbow" -> RgbChroma
             "reference_minimal", "referenceminimal", "reference", "minimal" -> ReferenceMinimal
             "retro_mech", "retromech", "retro", "mechanical", "mech" -> RetroMech
@@ -430,7 +471,7 @@ object KeyboardThemes {
             "light" -> Light
             "amoled" -> Amoled
             "custom", "indigo" -> Custom
-            else -> GeometricBalance
+            else -> Cat3dSlate
         }
     }
 }

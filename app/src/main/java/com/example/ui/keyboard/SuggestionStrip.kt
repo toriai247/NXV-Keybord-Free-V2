@@ -59,7 +59,9 @@ import androidx.compose.ui.unit.sp
 import com.example.data.entity.ClipboardItem
 import com.example.downloader.tiktok.TikTokDownloadState
 import com.example.suggestion.SuggestionItem
+import com.example.theme.CatThemeIcons
 import com.example.theme.KeyboardPalette
+import com.example.theme.ThemeSpecialIconStyle
 
 data class AutoSavePromptData(
     val serviceName: String,
@@ -313,13 +315,17 @@ fun SuggestionStrip(
                         }
 
                         if (suggestions.isEmpty() && recentClip == null) {
-                            Text(
-                                text = "NXV Keyboard",
-                                color = palette.secondaryTextColor.copy(alpha = 0.5f),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(start = 6.dp)
-                            )
+                            if (palette.specialIconStyle == ThemeSpecialIconStyle.CAT_3D_SLATE) {
+                                CatThemeIcons.CatBrandToolbarBadge()
+                            } else {
+                                Text(
+                                    text = "NXV Keyboard",
+                                    color = palette.secondaryTextColor.copy(alpha = 0.5f),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(start = 6.dp)
+                                )
+                            }
                         } else {
                             suggestions.forEachIndexed { index, item ->
                                 val isPrimary = item.isPrimary

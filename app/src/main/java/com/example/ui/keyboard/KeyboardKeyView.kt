@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.theme.Cat3dPopupCharacter
+import com.example.theme.CatThemeIcons
 import com.example.theme.KeyPopupStyle
 import com.example.theme.KeyboardPalette
 import com.example.theme.KittyThemeIcons
@@ -133,6 +135,11 @@ fun KeyboardKeyView(
     }
 
     val isRetroMech = palette.specialIconStyle == ThemeSpecialIconStyle.RETRO_MECH
+    val isCat3d = palette.specialIconStyle == ThemeSpecialIconStyle.CAT_3D_SLATE
+    val isCat3dCreamKey = isCat3d && (
+        (label.length == 1 && "qwertyuiopQWERTYUIOP".contains(label[0])) ||
+        isPrimaryAction || label == "↵" || label == "return" || label == "Go" || label == "Done" || label == "Search" || label == "Enter"
+    )
     val isKeyOrange = label == "Space" || (isSpaceBar && palette.spacebarStyle == SpacebarStyle.RETRO_MECH_SPACE)
     val isKeyWhite = isAlphabeticKey || label == "😊" || label == "🌐" || label == "." || label == "," || label == " Smiley" || label.contains("smiley") || label == "Emoji"
 
@@ -140,6 +147,9 @@ fun KeyboardKeyView(
     val labelColor = when {
         isRgbNeon -> {
             if (isPressed) Color.White else rgbNeonColor
+        }
+        isCat3d -> {
+            if (isCat3dCreamKey) Color(0xFF282E37) else Color.White
         }
         isRetroMech -> {
             when {
@@ -375,6 +385,51 @@ fun KeyboardKeyView(
             }
             .then(gestureModifier)
             .testTag("key_$label")
+    } else if (isCat3d) {
+        modifier
+            .padding(horizontal = 2.dp, vertical = 2.5.dp)
+            .height(height)
+            .scale(scale)
+            .drawBehind {
+                val radius = palette.keyCornerRadius.toPx()
+                val catBevel = 3.8.dp.toPx()
+                val catPressed = if (isPressed) 2.5.dp.toPx() else 0f
+
+                val shadowColor = if (isCat3dCreamKey) Color(0xFF9EA5B0) else Color(0xFF1E232B)
+                val faceColor = if (isCat3dCreamKey) {
+                    if (isPressed) Color(0xFFDCE0E6) else Color(0xFFF4F5F7)
+                } else {
+                    if (isPressed) Color(0xFF2E353E) else Color(0xFF3E4652)
+                }
+                val highlightColor = if (isCat3dCreamKey) Color(0xFFFFFFFF) else Color(0xFF525C6B)
+
+                // 1. Draw bottom 3D bevel base shadow
+                drawRoundRect(
+                    color = shadowColor,
+                    topLeft = Offset(0f, catBevel),
+                    size = Size(size.width, size.height - catBevel),
+                    cornerRadius = CornerRadius(radius, radius)
+                )
+
+                // 2. Draw top face (offset downwards when pressed)
+                drawRoundRect(
+                    color = faceColor,
+                    topLeft = Offset(0f, catPressed),
+                    size = Size(size.width, size.height - catBevel),
+                    cornerRadius = CornerRadius(radius, radius)
+                )
+
+                // 3. Draw fine top highlight stroke
+                drawRoundRect(
+                    color = highlightColor,
+                    topLeft = Offset(0f, catPressed),
+                    size = Size(size.width, size.height - catBevel),
+                    cornerRadius = CornerRadius(radius, radius),
+                    style = Stroke(width = 1.dp.toPx())
+                )
+            }
+            .then(gestureModifier)
+            .testTag("key_$label")
     } else {
         modifier
             .padding(horizontal = 2.dp, vertical = 2.5.dp)
@@ -396,7 +451,7 @@ fun KeyboardKeyView(
             .testTag("key_$label")
     }
 
-    val contentOffsetY = if (isRetroMech) {
+    val contentOffsetY = if (isRetroMech || isCat3d) {
         if (isPressed) 2.5.dp else 0.dp
     } else {
         0.dp
@@ -429,6 +484,27 @@ fun KeyboardKeyView(
         ) {
             // Check for theme-specific special icon drawings
             when {
+                // CAT 3D SLATE SPECIAL DRAWINGS
+                palette.specialIconStyle == ThemeSpecialIconStyle.CAT_3D_SLATE && (label == "⇧" || label == "⬆" || label == "⇪") -> {
+                    CatThemeIcons.CatShiftIcon(
+                        size = (height * 0.58f).coerceIn(20.dp, 28.dp),
+                        isShifted = isShiftActive || isCapsLock
+                    )
+                }
+                palette.specialIconStyle == ThemeSpecialIconStyle.CAT_3D_SLATE && label == "⌫" -> {
+                    CatThemeIcons.CatBackspaceIcon(
+                        size = (height * 0.72f).coerceIn(26.dp, 36.dp)
+                    )
+                }
+                palette.specialIconStyle == ThemeSpecialIconStyle.CAT_3D_SLATE && (isPrimaryAction || label == "↵" || label == "return" || label == "Go" || label == "Done" || label == "Search" || label == "Enter") -> {
+                    Text(
+                        text = if (label == "↵" || label == "return") "Enter" else label,
+                        color = Color(0xFF282E37),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 // RGB CHROMA NEON SPECIAL DRAWINGS (Reference image match!)
                 isRgbNeon && (label == "⇧" || label == "⬆" || label == "⇪") -> {
                     RgbSpectrumUtils.RgbShiftIcon(
@@ -657,6 +733,20 @@ fun KeyboardKeyView(
                                     // Empty box to keep it completely clean and elegant, matching the reference image perfectly!
                                 }
                             }
+                            SpacebarStyle.CAT_3D_SLATE_BAR -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .width(32.dp)
+                                            .height(3.dp)
+                                            .clip(RoundedCornerShape(1.5.dp))
+                                            .background(Color.White)
+                                    )
+                                }
+                            }
                             SpacebarStyle.KITTY_PAW_BAR -> {
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
@@ -874,6 +964,15 @@ fun KeyboardKeyView(
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+                popupMode == "popup" && palette.popupStyle == KeyPopupStyle.CAT_3D_SLATE_POPUP -> {
+                    Cat3dPopupCharacter(
+                        char = label.uppercase(),
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-56).dp)
+                            .zIndex(99f)
+                    )
                 }
                 popupMode == "popup" && palette.popupStyle == KeyPopupStyle.PUPPY_CHARACTER && label[0].isLetter() -> {
                     PuppyPopupCharacter(
