@@ -56,6 +56,7 @@ import androidx.compose.runtime.collectAsState
 import android.content.Context
 import com.example.downloader.tiktok.TikTokDownloadManager
 import com.example.downloader.tiktok.TikTokDownloadState
+import com.example.media.BackgroundMusicManager
 import com.example.data.entity.ClipboardItem
 import com.example.data.entity.SavedCredential
 import com.example.data.preferences.KeyboardSettings
@@ -138,6 +139,15 @@ fun KeyboardRootView(
     // TikTok & Social Downloader State
     val tikTokManager = remember { TikTokDownloadManager.getInstance(context) }
     val tikTokState by tikTokManager.state.collectAsState()
+
+    // Background Music Manager State
+    val musicManager = remember { BackgroundMusicManager.getInstance(context) }
+    val activeMediaFilePath by musicManager.activeFilePath.collectAsState()
+    val activeMediaTitle by musicManager.activeTitle.collectAsState()
+    val activeMediaIsAudio by musicManager.isAudio.collectAsState()
+    val isMediaPlaying by musicManager.isPlaying.collectAsState()
+    val mediaCurrentPosMs by musicManager.currentPositionMs.collectAsState()
+    val mediaDurationMs by musicManager.durationMs.collectAsState()
 
     // In-Keyboard Media Player State
     var activeMediaPlayerPath by remember { mutableStateOf<String?>(null) }
@@ -653,9 +663,7 @@ fun KeyboardRootView(
                                     },
                                     onTikTokPlayInKeyboard = { filePath, isAudio, title ->
                                         playFeedback()
-                                        activeMediaPlayerPath = filePath
-                                        activeMediaPlayerIsAudio = isAudio
-                                        activeMediaPlayerTitle = title
+                                        musicManager.playMedia(filePath, isAudio, title)
                                     },
                                     onTikTokToolbarClick = {
                                         playFeedback()
@@ -667,6 +675,26 @@ fun KeyboardRootView(
                                             val clip = cm?.primaryClip?.getItemAt(0)?.text?.toString()
                                             tikTokManager.onClipboardUpdated(clip)
                                         }
+                                    },
+                                    activeMediaTitle = activeMediaTitle,
+                                    isMediaPlaying = isMediaPlaying,
+                                    mediaCurrentPosMs = mediaCurrentPosMs,
+                                    mediaDurationMs = mediaDurationMs,
+                                    onMediaClick = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.MEDIA)
+                                    },
+                                    onMediaTogglePlayPause = {
+                                        playFeedback()
+                                        musicManager.togglePlayPause()
+                                    },
+                                    onMediaOpenBrowser = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.MEDIA)
+                                    },
+                                    onMediaClosePlayer = {
+                                        playFeedback()
+                                        musicManager.stop()
                                     }
                                 )
                             }
@@ -693,6 +721,30 @@ fun KeyboardRootView(
                             )
                         } else {
                             when (currentMode) {
+                            KeyboardMode.MEDIA -> {
+                                LocalMediaBrowserLayout(
+                                    palette = palette,
+                                    onCloseBrowser = {
+                                        playFeedback()
+                                        onModeSwitch(
+                                            when (settings.currentLanguage) {
+                                                "bangla" -> KeyboardMode.BANGLA
+                                                "avro" -> KeyboardMode.AVRO
+                                                else -> KeyboardMode.ENGLISH
+                                            }
+                                        )
+                                    },
+                                    onPlayMedia = { filePath, isAudio, title ->
+                                        playFeedback()
+                                        musicManager.playMedia(filePath, isAudio, title)
+                                    },
+                                    onPasteText = { text ->
+                                        playFeedback()
+                                        onCharTyped(text)
+                                    }
+                                )
+                            }
+
                             KeyboardMode.EMOJI -> {
                                 EmojiKeyboardLayout(
                                     palette = palette,
@@ -790,9 +842,7 @@ fun KeyboardRootView(
                                     },
                                     onPlayInKeyboard = { filePath, isAudio, title ->
                                         playFeedback()
-                                        activeMediaPlayerPath = filePath
-                                        activeMediaPlayerIsAudio = isAudio
-                                        activeMediaPlayerTitle = title
+                                        musicManager.playMedia(filePath, isAudio, title)
                                     }
                                 )
                             }

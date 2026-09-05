@@ -30,6 +30,7 @@ import com.example.data.entity.SavedCredential
 import com.example.data.entity.TextShortcut
 import com.example.data.preferences.KeyboardSettings
 import com.example.ui.settings.AboutScreen
+import com.example.ui.settings.AiModelScreen
 import com.example.ui.settings.ClipboardPrefsScreen
 import com.example.ui.settings.DictionaryScreen
 import com.example.ui.settings.KeyboardCustomizeScreen
@@ -319,6 +320,10 @@ class MainActivity : ComponentActivity() {
 
                             SettingsScreen.ABOUT -> {
                                 AboutScreen(onBack = { currentScreen = SettingsScreen.HOME })
+                            }
+
+                            SettingsScreen.AI_MODEL -> {
+                                AiModelScreen(onBack = { currentScreen = SettingsScreen.HOME })
                             }
                         }
                     }

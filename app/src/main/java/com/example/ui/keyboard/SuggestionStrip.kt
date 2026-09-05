@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
@@ -119,6 +120,14 @@ fun SuggestionStrip(
     onTikTokShareFile: (filePath: String, isAudio: Boolean) -> Unit = { _, _ -> },
     onTikTokPlayInKeyboard: (filePath: String, isAudio: Boolean, title: String) -> Unit = { _, _, _ -> },
     onTikTokToolbarClick: () -> Unit = {},
+    activeMediaTitle: String = "",
+    isMediaPlaying: Boolean = false,
+    mediaCurrentPosMs: Int = 0,
+    mediaDurationMs: Int = 0,
+    onMediaClick: () -> Unit = {},
+    onMediaTogglePlayPause: () -> Unit = {},
+    onMediaOpenBrowser: () -> Unit = {},
+    onMediaClosePlayer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -269,6 +278,18 @@ fun SuggestionStrip(
                         onOpenFile = onTikTokOpenFile,
                         onShareFile = onTikTokShareFile,
                         onPlayInKeyboard = onTikTokPlayInKeyboard,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else if (activeMediaTitle.isNotBlank()) {
+                    MusicPlayerSuggestionBar(
+                        title = activeMediaTitle,
+                        isPlaying = isMediaPlaying,
+                        currentPosMs = mediaCurrentPosMs,
+                        durationMs = mediaDurationMs,
+                        palette = palette,
+                        onTogglePlayPause = onMediaTogglePlayPause,
+                        onOpenMediaBrowser = onMediaOpenBrowser,
+                        onClosePlayer = onMediaClosePlayer,
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -438,6 +459,16 @@ fun SuggestionStrip(
                             palette = palette,
                             tag = "toolbar_stickers",
                             onClick = onStickersClick
+                        )
+
+                        // 2.3 Media & Music Player Action
+                        ActionToolChip(
+                            icon = Icons.Default.Audiotrack,
+                            label = if (activeMediaTitle.isNotBlank()) "Media 🎵" else "Media",
+                            palette = palette,
+                            isActive = activeMediaTitle.isNotBlank(),
+                            tag = "toolbar_media",
+                            onClick = onMediaClick
                         )
 
                         // 2. Text Edit Pad Action

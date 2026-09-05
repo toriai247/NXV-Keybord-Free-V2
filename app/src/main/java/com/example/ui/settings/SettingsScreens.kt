@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -472,6 +473,16 @@ fun SettingsHomeScreen(
                 subtitle = "Expand abbreviations (e.g. brb -> Be right back)",
                 onClick = { onNavigate(SettingsScreen.SHORTCUTS) },
                 tag = "tile_shortcuts"
+            )
+
+            // AI Writing Model Group
+            SettingsCategoryHeader("AI WRITING ASSISTANT")
+            SettingsTile(
+                icon = Icons.Default.AutoAwesome,
+                title = "ONNX AI Model & Auto Setup",
+                subtitle = "Download low-size offline AI model for smart writing",
+                onClick = { onNavigate(SettingsScreen.AI_MODEL) },
+                tag = "tile_ai_model"
             )
 
             // Privacy & Info Group

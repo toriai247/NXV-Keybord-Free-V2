@@ -12,7 +12,8 @@ enum class KeyboardMode {
     VAULT,
     TEXT_EDIT,
     NUMBER_PAD,
-    VOICE
+    VOICE,
+    MEDIA
 }
 
 enum class OneHandedMode(val modeKey: String) {

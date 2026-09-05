@@ -7,6 +7,9 @@ object EnglishDictionary {
      * conversation, work, study, and mobile typing.
      */
     val WORDS: List<String> = listOf(
+        // High Frequency Apps & Islamic Greetings (User Requested)
+        "alhamdulillah", "allhamdullilah", "alhamdullilah", "assalamu", "assalamualaikum", "assalamulaykum", "astagfirullah", "astaghfirullah", "allah", "ameen", "amin",
+
         // A
         "a", "ability", "able", "about", "above", "abroad", "absolute", "absolutely",
         "accept", "access", "accident", "accompany", "according", "account", "accurate",
@@ -19,10 +22,10 @@ object EnglishDictionary {
         "aircraft", "airline", "airport", "alarm", "album", "alcohol", "alive", "all",
         "allow", "almost", "alone", "along", "already", "alright", "also", "alternative",
         "although", "always", "am", "amaze", "amazing", "ambition", "among", "amount",
-        "analysis", "analyze", "ancient", "and", "anger", "angle", "angry", "animal",
+        "analysis", "analyze", "ancient", "and", "android", "anger", "angle", "angry", "animal",
         "anniversary", "announce", "announcement", "annual", "another", "answer",
         "anticipate", "anxiety", "any", "anybody", "anymore", "anyone", "anything",
-        "anyway", "anywhere", "apartment", "apparent", "apparently", "appeal", "appear",
+        "anyway", "anywhere", "apartment", "apk", "app", "appstore", "apparent", "apparently", "appeal", "appear",
         "appearance", "apple", "application", "apply", "appoint", "appreciate",
         "approach", "appropriate", "approval", "approve", "approximate", "april",
         "architect", "area", "argue", "argument", "arise", "arm", "army", "around",
@@ -44,7 +47,7 @@ object EnglishDictionary {
         "behavior", "behind", "being", "belief", "believe", "bell", "belong", "below",
         "belt", "bench", "bend", "beneath", "benefit", "beside", "besides", "best",
         "bet", "better", "between", "beyond", "bicycle", "bid", "big", "bike", "bill",
-        "billion", "bind", "biography", "biological", "bird", "birth", "birthday",
+        "billion", "bind", "biography", "biological", "bird", "birth", "birthday", "bismilla", "bismillah", "bkash",
         "bit", "bite", "bitter", "black", "blade", "blame", "blank", "blanket",
         "blind", "block", "blood", "blow", "blue", "board", "boat", "body", "boil",
         "bomb", "bond", "bone", "bonus", "book", "boom", "boot", "border", "bored",
@@ -153,10 +156,10 @@ object EnglishDictionary {
         "extra", "extraordinary", "extreme", "extremely", "eye",
 
         // F
-        "fabric", "face", "facility", "fact", "factor", "factory", "faculty", "fade",
+        "fabric", "face", "facebook", "facility", "fact", "factor", "factory", "faculty", "fade",
         "fail", "failure", "fair", "fairly", "faith", "fall", "false", "familiar",
         "family", "famous", "fan", "fantasy", "far", "farm", "farmer", "fashion",
-        "fast", "fat", "fate", "father", "fault", "favor", "favorite", "fear",
+        "fast", "fat", "fate", "father", "fault", "favor", "favorite", "fb", "fear",
         "feature", "federal", "fee", "feed", "feel", "feeling", "fellow", "female",
         "fence", "few", "fewer", "fiber", "fiction", "field", "fifteen", "fifth",
         "fifty", "fight", "fighter", "fighting", "figure", "file", "fill", "film",
@@ -204,7 +207,7 @@ object EnglishDictionary {
         "i", "ice", "idea", "ideal", "identification", "identify", "identity",
         "ie", "if", "ignore", "ill", "illegal", "illness", "illustrate", "image",
         "imagination", "imagine", "immediate", "immediately", "immigrant", "immigration",
-        "impact", "implement", "implication", "imply", "importance", "important",
+        "imo", "impact", "implement", "implication", "imply", "importance", "important",
         "impose", "impossible", "impress", "impression", "impressive", "improve",
         "improvement", "in", "incentive", "incident", "include", "including",
         "income", "incorporate", "increase", "increased", "increasing", "increasingly",
@@ -212,7 +215,7 @@ object EnglishDictionary {
         "indicate", "indication", "individual", "industrial", "industry", "infant",
         "infection", "inflation", "influence", "inform", "information", "ingredient",
         "initial", "initially", "initiative", "injury", "inner", "innocent", "inquiry",
-        "inside", "insight", "insist", "inspire", "install", "instance", "instead",
+        "inside", "insight", "insist", "inshaallah", "inshallah", "insallah", "inspire", "insta", "instagram", "install", "instance", "instead",
         "institution", "institutional", "instruction", "instructor", "instrument",
         "insurance", "intellectual", "intelligence", "intend", "intense", "intensity",
         "intention", "interaction", "interest", "interested", "interesting", "internal",
@@ -254,12 +257,12 @@ object EnglishDictionary {
         "maintenance", "major", "majority", "make", "maker", "makeup", "male",
         "mall", "man", "manage", "management", "manager", "manner", "manufacturer",
         "manufacturing", "many", "map", "margin", "mark", "market", "marketing",
-        "marriage", "married", "marry", "mask", "mass", "massive", "master",
+        "marriage", "married", "marry", "mashallah", "mashaallah", "mask", "mass", "massive", "master",
         "match", "material", "math", "matter", "may", "maybe", "mayor", "me",
         "meal", "mean", "meaning", "meanwhile", "measure", "measurement", "meat",
         "mechanism", "media", "medical", "medication", "medicine", "medium", "meet",
         "meeting", "member", "membership", "memory", "mental", "mention", "menu",
-        "mere", "merely", "message", "metal", "meter", "method", "mexican", "middle",
+        "mere", "merely", "message", "messages", "messaging", "messengar", "messenger", "metal", "meter", "method", "mexican", "middle",
         "might", "military", "milk", "million", "mind", "mine", "minister", "minor",
         "minority", "minute", "miracle", "mirror", "miss", "missile", "mission",
         "mistake", "mix", "mixture", "mode", "model", "moderate", "modern",
@@ -388,7 +391,7 @@ object EnglishDictionary {
         "sing", "singer", "single", "sink", "sir", "sister", "sit", "site",
         "situation", "six", "size", "ski", "skill", "skin", "sky", "slave",
         "sleep", "slice", "slide", "slight", "slightly", "slip", "slow", "slowly",
-        "small", "smart", "smell", "smile", "smoke", "smooth", "snap", "snow",
+        "small", "smart", "smell", "smile", "smoke", "smooth", "snap", "snapchat", "snow",
         "so", "so-called", "soccer", "social", "society", "soft", "softly",
         "software", "soil", "solar", "soldier", "solid", "solution", "solve",
         "some", "somebody", "somehow", "someone", "something", "sometimes",
@@ -420,7 +423,7 @@ object EnglishDictionary {
         "talk", "tall", "tank", "tap", "tape", "target", "task", "taste",
         "tax", "taxpayer", "tea", "teach", "teacher", "teaching", "team",
         "tear", "teaspoon", "technical", "technique", "technology", "teen",
-        "teenager", "telephone", "telescope", "television", "tell", "temperature",
+        "teenager", "telegram", "telephone", "telescope", "television", "tell", "temperature",
         "temporary", "ten", "tend", "tendency", "tennis", "tension", "tent",
         "term", "terms", "terrible", "territory", "terror", "terrorism",
         "terrorist", "test", "testify", "testimony", "testing", "text", "than",
@@ -428,7 +431,7 @@ object EnglishDictionary {
         "themselves", "then", "theory", "therapy", "there", "therefore", "these",
         "they", "thick", "thin", "thing", "think", "thinking", "third", "thirty",
         "this", "those", "though", "thought", "thousand", "threat", "threaten",
-        "three", "throat", "through", "throughout", "throw", "thus", "ticket",
+        "three", "throat", "through", "throughout", "throw", "thus", "ticket", "tiktok", "threads",
         "tie", "tight", "time", "tiny", "tip", "tire", "tired", "tissue",
         "title", "to", "tobacco", "today", "toe", "together", "tomato",
         "tomorrow", "tone", "tongue", "tonight", "too", "tool", "tooth",
@@ -464,7 +467,7 @@ object EnglishDictionary {
         "warn", "warning", "wash", "waste", "watch", "water", "wave", "way",
         "we", "weak", "wealth", "wealthy", "weapon", "wear", "weather", "wedding",
         "week", "weekend", "weekly", "weigh", "weight", "welcome", "welfare",
-        "well", "west", "western", "wet", "what", "whatever", "wheel", "when",
+        "well", "west", "western", "wet", "what", "whatsapp", "whatsap", "watsapp", "wasap", "whatever", "wheel", "when",
         "whenever", "where", "whereas", "whether", "which", "while", "whisper",
         "white", "who", "whole", "whom", "whose", "why", "wide", "widely",
         "widespread", "wife", "wild", "will", "willing", "win", "wind",
@@ -476,7 +479,7 @@ object EnglishDictionary {
 
         // Y & Z
         "yard", "yeah", "year", "yell", "yellow", "yes", "yesterday", "yet",
-        "yield", "you", "young", "your", "yours", "yourself", "youth",
+        "yield", "you", "young", "your", "yours", "yourself", "youtube", "yt", "youth",
         "zone"
     )
 

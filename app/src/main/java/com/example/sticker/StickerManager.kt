@@ -179,7 +179,10 @@ class StickerManager private constructor(private val context: Context) {
                 }
 
                 val mimeType = sticker.mimeType
-                val description = ClipDescription(sticker.displayName, arrayOf(mimeType, "image/*"))
+                val description = ClipDescription(
+                    sticker.displayName,
+                    arrayOf(mimeType, "image/webp", "image/png", "image/jpeg", "image/*")
+                )
                 val inputContentInfo = InputContentInfoCompat(contentUri, description, null)
 
                 var flags = 0
@@ -205,9 +208,10 @@ class StickerManager private constructor(private val context: Context) {
 
                 withContext(Dispatchers.Main) {
                     if (committed) {
+                        Toast.makeText(context, "Sticker sent!", Toast.LENGTH_SHORT).show()
                         onSuccess()
                     } else {
-                        // Fallback: Copy to system clipboard
+                        // Fallback: Copy to system clipboard for apps like TikTok, Imo, or restricted input fields
                         try {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                             val clip = ClipData.newUri(
@@ -218,8 +222,8 @@ class StickerManager private constructor(private val context: Context) {
                             clipboard?.setPrimaryClip(clip)
                             Toast.makeText(
                                 context,
-                                "Sticker copied to clipboard! Paste into chat.",
-                                Toast.LENGTH_SHORT
+                                "Sticker copied! Long-press chat box & tap Paste (পেস্ট করুন)",
+                                Toast.LENGTH_LONG
                             ).show()
                             onCopiedToClipboard()
                         } catch (e: Exception) {

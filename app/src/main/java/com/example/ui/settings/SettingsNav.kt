@@ -13,5 +13,6 @@ enum class SettingsScreen {
     CLIPBOARD,
     VAULT,
     PRIVACY,
-    ABOUT
+    ABOUT,
+    AI_MODEL
 }
