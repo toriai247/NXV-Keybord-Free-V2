@@ -30,7 +30,6 @@ import com.example.data.entity.SavedCredential
 import com.example.data.entity.TextShortcut
 import com.example.data.preferences.KeyboardSettings
 import com.example.ui.settings.AboutScreen
-import com.example.ui.settings.AiModelScreen
 import com.example.ui.settings.ClipboardPrefsScreen
 import com.example.ui.settings.DictionaryScreen
 import com.example.ui.settings.KeyboardCustomizeScreen
@@ -39,6 +38,7 @@ import com.example.ui.settings.OnboardingView
 import com.example.ui.settings.PrivacyScreen
 import com.example.ui.settings.SettingsHomeScreen
 import com.example.ui.settings.SettingsScreen
+import com.example.ui.settings.GeminiAiPrefsScreen
 import com.example.ui.settings.ShortcutsScreen
 import com.example.ui.settings.SoundHapticScreen
 import com.example.ui.settings.ThemeLibraryScreen
@@ -322,8 +322,20 @@ class MainActivity : ComponentActivity() {
                                 AboutScreen(onBack = { currentScreen = SettingsScreen.HOME })
                             }
 
-                            SettingsScreen.AI_MODEL -> {
-                                AiModelScreen(onBack = { currentScreen = SettingsScreen.HOME })
+                            SettingsScreen.GEMINI_AI_PREFS -> {
+                                GeminiAiPrefsScreen(
+                                    settings = settings,
+                                    onUpdateApiKey = { key ->
+                                        scope.launch { app.preferences.updateGeminiApiKey(key) }
+                                    },
+                                    onUpdateModel = { model ->
+                                        scope.launch { app.preferences.updateGeminiModel(model) }
+                                    },
+                                    onResetTokens = {
+                                        scope.launch { app.preferences.resetTokensUsed() }
+                                    },
+                                    onBack = { currentScreen = SettingsScreen.HOME }
+                                )
                             }
                         }
                     }

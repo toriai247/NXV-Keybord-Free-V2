@@ -41,7 +41,10 @@ data class KeyboardSettings(
     val showLanguageKey: Boolean = true,
     val showKeySubLabels: Boolean = true,
     val keyPopupMode: String = "popup",
-    val onboardingCompleted: Boolean = false
+    val onboardingCompleted: Boolean = false,
+    val geminiApiKey: String = "",
+    val geminiModel: String = "gemini-1.5-flash",
+    val totalTokensUsed: Long = 0L
 )
 
 class KeyboardPreferences(private val context: Context) {
@@ -74,6 +77,9 @@ class KeyboardPreferences(private val context: Context) {
         val KEY_SHOW_KEY_SUBLABELS = booleanPreferencesKey("show_key_sublabels")
         val KEY_KEY_POPUP_MODE = stringPreferencesKey("key_popup_mode")
         val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val KEY_GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
+        val KEY_GEMINI_MODEL = stringPreferencesKey("gemini_model")
+        val KEY_TOTAL_TOKENS_USED = androidx.datastore.preferences.core.longPreferencesKey("total_tokens_used")
     }
 
     val settingsFlow: Flow<KeyboardSettings> = context.dataStore.data.map { prefs ->
@@ -104,8 +110,30 @@ class KeyboardPreferences(private val context: Context) {
             showLanguageKey = prefs[KEY_SHOW_LANGUAGE_KEY] ?: true,
             showKeySubLabels = prefs[KEY_SHOW_KEY_SUBLABELS] ?: true,
             keyPopupMode = prefs[KEY_KEY_POPUP_MODE] ?: "popup",
-            onboardingCompleted = prefs[KEY_ONBOARDING_COMPLETED] ?: false
+            onboardingCompleted = prefs[KEY_ONBOARDING_COMPLETED] ?: false,
+            geminiApiKey = prefs[KEY_GEMINI_API_KEY] ?: "",
+            geminiModel = prefs[KEY_GEMINI_MODEL] ?: "gemini-1.5-flash",
+            totalTokensUsed = prefs[KEY_TOTAL_TOKENS_USED] ?: 0L
         )
+    }
+
+    suspend fun updateGeminiApiKey(apiKey: String) {
+        context.dataStore.edit { it[KEY_GEMINI_API_KEY] = apiKey.trim() }
+    }
+
+    suspend fun updateGeminiModel(model: String) {
+        context.dataStore.edit { it[KEY_GEMINI_MODEL] = model }
+    }
+
+    suspend fun addTokensUsed(tokens: Long) {
+        context.dataStore.edit {
+            val current = it[KEY_TOTAL_TOKENS_USED] ?: 0L
+            it[KEY_TOTAL_TOKENS_USED] = current + tokens
+        }
+    }
+
+    suspend fun resetTokensUsed() {
+        context.dataStore.edit { it[KEY_TOTAL_TOKENS_USED] = 0L }
     }
 
     suspend fun updateActiveLanguages(languages: Set<String>) {

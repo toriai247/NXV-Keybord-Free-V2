@@ -98,6 +98,7 @@ fun SuggestionStrip(
     onQuickPaste: ((String) -> Unit)? = null,
     onVaultClick: () -> Unit = {},
     onTextEditClick: () -> Unit = {},
+    onAiClick: () -> Unit = {},
     onNumberPadClick: () -> Unit = {},
     onStickersClick: () -> Unit = {},
     onVoiceClick: () -> Unit = {},
@@ -422,6 +423,16 @@ fun SuggestionStrip(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // 0. AI Assistant Action
+                        ActionToolChip(
+                            icon = Icons.Default.AutoAwesome,
+                            label = "AI ✦",
+                            palette = palette,
+                            isActive = true,
+                            tag = "toolbar_ai_assistant",
+                            onClick = onAiClick
+                        )
+
                         // 1. Voice Typing Action
                         ActionToolChip(
                             icon = Icons.Default.Mic,

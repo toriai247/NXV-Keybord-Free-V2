@@ -14,5 +14,5 @@ enum class SettingsScreen {
     VAULT,
     PRIVACY,
     ABOUT,
-    AI_MODEL
+    GEMINI_AI_PREFS
 }

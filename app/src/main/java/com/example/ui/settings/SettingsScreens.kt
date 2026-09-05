@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -54,6 +53,11 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -444,6 +448,16 @@ fun SettingsHomeScreen(
                 tag = "tile_sound"
             )
 
+            // Intelligent AI Group
+            SettingsCategoryHeader("INTELLIGENT AI")
+            SettingsTile(
+                icon = Icons.Default.AutoAwesome,
+                title = "Gemini AI Assistant ✦",
+                subtitle = "API key, models, token budget & usage info",
+                onClick = { onNavigate(SettingsScreen.GEMINI_AI_PREFS) },
+                tag = "tile_gemini_ai"
+            )
+
             // Data & Tools Group
             SettingsCategoryHeader("DATA & TOOLS")
             SettingsTile(
@@ -473,16 +487,6 @@ fun SettingsHomeScreen(
                 subtitle = "Expand abbreviations (e.g. brb -> Be right back)",
                 onClick = { onNavigate(SettingsScreen.SHORTCUTS) },
                 tag = "tile_shortcuts"
-            )
-
-            // AI Writing Model Group
-            SettingsCategoryHeader("AI WRITING ASSISTANT")
-            SettingsTile(
-                icon = Icons.Default.AutoAwesome,
-                title = "ONNX AI Model & Auto Setup",
-                subtitle = "Download low-size offline AI model for smart writing",
-                onClick = { onNavigate(SettingsScreen.AI_MODEL) },
-                tag = "tile_ai_model"
             )
 
             // Privacy & Info Group
@@ -2163,6 +2167,235 @@ fun AboutScreen(onBack: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GeminiAiPrefsScreen(
+    settings: KeyboardSettings,
+    onUpdateApiKey: (String) -> Unit,
+    onUpdateModel: (String) -> Unit,
+    onResetTokens: () -> Unit,
+    onBack: () -> Unit
+) {
+    val context = LocalContext.current
+    var keyText by remember(settings.geminiApiKey) { mutableStateOf(settings.geminiApiKey) }
+
+    Scaffold(
+        topBar = {
+            MediumTopAppBar(
+                title = { Text("Gemini AI Assistant ✦", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Intro Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "কিবোর্ডে সরাসরি ইন্টেলিজেন্ট এআই!",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Gemini API-র সাহায্যে সরাসরি টাইপিংয়ের সময় ভুল বানান/ব্যাকরণ ঠিক করুন, দ্রুত চ্যাট রিপ্লাই জেনারেট করুন, কবিতা বা ছন্দ লিখুন, অথবা যেকোনো কাস্টম প্রম্পট রান করুন।",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            // API Key Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🔑 Gemini Free API Key",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        TextButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Text("Get Free Key", fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(androidx.compose.material.icons.Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = keyText,
+                        onValueChange = { keyText = it },
+                        placeholder = { Text("Paste AI Studio API Key (AIzaSy...)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+
+                    Button(
+                        onClick = {
+                            onUpdateApiKey(keyText.trim())
+                            android.widget.Toast.makeText(context, "Gemini API Key Saved!", android.widget.Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.align(Alignment.End),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Save Key")
+                    }
+                }
+            }
+
+            // Model Selection Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "🧠 Choose Gemini AI Model",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        text = "1.5 Flash দ্রুত গতির জন্য সেরা, আর 1.5 Pro আরও ক্রিয়েটিভ ও বুদ্ধিমান উত্তরের জন্য ভালো।",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    val modelsList = listOf(
+                        "gemini-1.5-flash" to "Gemini 1.5 Flash ⚡ (Recommended / Fast & Reliable)",
+                        "gemini-1.5-pro" to "Gemini 1.5 Pro 🧠 (Creative & Deep Reasoning)",
+                        "gemini-1.5-flash-8b" to "Gemini 1.5 Flash-8b 🚀 (Super Lite / Ultra Cost Efficient)"
+                    )
+
+                    modelsList.forEach { (code, desc) ->
+                        val isSelected = settings.geminiModel == code
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                .clickable { onUpdateModel(code) }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = { onUpdateModel(code) }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = desc,
+                                fontSize = 13.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Token Usage & Budget Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "📊 AI Resource Usage (এআই টোকেন বাজেট)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Total Tokens Used",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "${settings.totalTokensUsed} tokens",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Button(
+                            onClick = onResetTokens,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Reset Count", fontSize = 12.sp)
+                        }
+                    }
+
+                    Text(
+                        text = "গড়পড়তা ১টি বাংলা বাক্যে ১৫-৫০টি টোকেন খরচ হয়। ফ্রি টায়ারে প্রতি মিনিটে ১৫টি রিকোয়েস্ট পর্যন্ত ফ্রিতে ব্যবহার করা যায়। টোকেন ব্যবহারের হিসাব দেখে আপনি সহজে বাজেট নিয়ন্ত্রণ করতে পারবেন।",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Key AI Features Description
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("💡 এআই কীভাবে ওপেন করবেন?", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("যেকোনো অ্যাপে কিবোর্ড ওপেন করে সাজেশন স্ট্রিপে (কিবোর্ডের ওপরের অংশ) 'AI ✦' বাটনটিতে ট্যাপ করলেই এআই এসিস্ট্যান্ট প্যানেল খুলে যাবে। সেখান থেকে সরাসরি লেখা ঠিক করতে বা কবিতা তৈরি করে ১-ক্লিকে ইনসার্ট করতে পারবেন!", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }

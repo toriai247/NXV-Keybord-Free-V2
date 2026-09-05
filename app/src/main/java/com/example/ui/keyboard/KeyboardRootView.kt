@@ -567,6 +567,10 @@ fun KeyboardRootView(
                                         playFeedback()
                                         onModeSwitch(KeyboardMode.TEXT_EDIT)
                                     },
+                                    onAiClick = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.AI)
+                                    },
                                     onNumberPadClick = {
                                         playFeedback()
                                         onModeSwitch(KeyboardMode.NUMBER_PAD)
@@ -789,6 +793,29 @@ fun KeyboardRootView(
                                         onDelete()
                                     },
                                     onCloseStickers = {
+                                        playFeedback()
+                                        onModeSwitch(
+                                            when (settings.currentLanguage) {
+                                                "bangla" -> KeyboardMode.BANGLA
+                                                "avro" -> KeyboardMode.AVRO
+                                                else -> KeyboardMode.ENGLISH
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+
+                            KeyboardMode.AI -> {
+                                AiAssistantSheet(
+                                    palette = palette,
+                                    apiKey = settings.geminiApiKey,
+                                    selectedModel = settings.geminiModel,
+                                    totalTokensUsed = settings.totalTokensUsed,
+                                    preferences = com.example.NXVApplication.instance.preferences,
+                                    onInsertText = { text ->
+                                        onCharTyped(text)
+                                    },
+                                    onClose = {
                                         playFeedback()
                                         onModeSwitch(
                                             when (settings.currentLanguage) {
