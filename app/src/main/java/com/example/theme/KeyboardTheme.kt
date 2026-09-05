@@ -10,7 +10,8 @@ enum class ThemeSpecialIconStyle {
     STRAWBERRY_DESSERT,
     KAWAII_KITTEN,
     RETRO_MECH,
-    REFERENCE_MINIMAL
+    REFERENCE_MINIMAL,
+    RGB_NEON
 }
 
 enum class KeyPopupStyle {
@@ -18,7 +19,8 @@ enum class KeyPopupStyle {
     PUPPY_CHARACTER,
     STRAWBERRY_SWEET,
     KAWAII_KITTY_POPUP,
-    RETRO_MECH_POPUP
+    RETRO_MECH_POPUP,
+    RGB_NEON_POPUP
 }
 
 enum class SpacebarStyle {
@@ -27,7 +29,8 @@ enum class SpacebarStyle {
     STRAWBERRY_PILL,
     KITTY_PAW_BAR,
     RETRO_MECH_SPACE,
-    REFERENCE_MINIMAL_SPACE
+    REFERENCE_MINIMAL_SPACE,
+    RGB_NEON_BAR
 }
 
 data class KeyboardPalette(
@@ -329,6 +332,43 @@ object KeyboardThemes {
         )
     )
 
+    // RGB Chroma Neon (Pitch black AMOLED keys with vivid rainbow neon borders, glow typography & type effects)
+    val RgbChroma = KeyboardPalette(
+        themeId = "rgb_neon",
+        themeName = "RGB Chroma Neon",
+        themeDescription = "Vibrant rainbow neon glowing borders across jet-black keys with dynamic RGB typing wave and neon burst effects",
+        category = "Featured & RGB",
+        keyboardBackground = Color(0xFF000000), // Pitch black AMOLED
+        keyBackground = Color(0xFF080808), // Sleek deep black key face
+        keyPressedBackground = Color(0xFF1E1E24), // Illuminated neon glow keypress
+        keyActionBackground = Color(0xFF0A0A0A),
+        textColor = Color(0xFF39FF14), // Dynamic RGB column color
+        secondaryTextColor = Color(0xFF38BDF8),
+        accentColor = Color(0xFF00F0FF), // Electric cyan accent
+        onAccentColor = Color(0xFF000000),
+        suggestionBarBackground = Color(0xFF050505),
+        suggestionHighlightColor = Color(0xFF00F0FF),
+        dividerColor = Color(0xFF18181B),
+        keyBorderColor = Color(0xFF39FF14), // Dynamic RGB spectrum border
+        keyBorderWidth = 1.8.dp, // Distinct crisp glowing neon border
+        keyCornerRadius = 9.dp, // Modern rounded box matching reference
+        keyElevation = 0.dp,
+        pressedElevation = 0.dp,
+        specialIconStyle = ThemeSpecialIconStyle.RGB_NEON,
+        popupStyle = KeyPopupStyle.RGB_NEON_POPUP,
+        spacebarStyle = SpacebarStyle.RGB_NEON_BAR,
+        spacebarWatermark = null,
+        showTopRowHints = false,
+        topRowHintColor = Color(0xFF64748B),
+        previewColors = listOf(
+            Color(0xFF000000),
+            Color(0xFF39FF14),
+            Color(0xFF00F0FF),
+            Color(0xFFA855F7),
+            Color(0xFFEF4444)
+        )
+    )
+
     // Reference Minimal (Ultra-clean minimalist white interface with dual UI mode support)
     val ReferenceMinimal = KeyboardPalette(
         themeId = "reference_minimal",
@@ -366,6 +406,7 @@ object KeyboardThemes {
     )
 
     val ALL_THEMES: List<KeyboardPalette> = listOf(
+        RgbChroma,
         ReferenceMinimal,
         RetroMech,
         KawaiiKitten,
@@ -379,6 +420,7 @@ object KeyboardThemes {
 
     fun getPalette(themeName: String): KeyboardPalette {
         return when (themeName.lowercase()) {
+            "rgb_neon", "rgb", "chroma", "neon", "rgb_chroma", "rainbow" -> RgbChroma
             "reference_minimal", "referenceminimal", "reference", "minimal" -> ReferenceMinimal
             "retro_mech", "retromech", "retro", "mechanical", "mech" -> RetroMech
             "kawaii_kitten", "kawaiikitten", "kitten", "kitty", "cute_kitty" -> KawaiiKitten

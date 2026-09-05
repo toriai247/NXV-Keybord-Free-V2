@@ -50,7 +50,7 @@ fun NumberAndSymbolLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            row1.forEach { char ->
+            row1.forEachIndexed { index, char ->
                 KeyboardKeyView(
                     label = char,
                     modifier = Modifier.weight(1f),
@@ -58,6 +58,8 @@ fun NumberAndSymbolLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = row1.size,
                     onTap = { onCharTyped(char) }
                 )
             }
@@ -68,7 +70,7 @@ fun NumberAndSymbolLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            row2.forEach { char ->
+            row2.forEachIndexed { index, char ->
                 KeyboardKeyView(
                     label = char,
                     modifier = Modifier.weight(1f),
@@ -76,6 +78,8 @@ fun NumberAndSymbolLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = row2.size,
                     onTap = { onCharTyped(char) }
                 )
             }

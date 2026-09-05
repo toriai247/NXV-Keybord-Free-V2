@@ -63,7 +63,7 @@ fun QwertyKeyLayout(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                EnglishEngine.NUMBER_ROW.forEach { num ->
+                EnglishEngine.NUMBER_ROW.forEachIndexed { index, num ->
                     KeyboardKeyView(
                         label = num,
                         modifier = Modifier.weight(1f),
@@ -71,6 +71,8 @@ fun QwertyKeyLayout(
                         palette = palette,
                         showSubLabel = showKeySubLabels,
                         popupMode = popupMode,
+                        columnIndex = index,
+                        totalColumns = 10,
                         onTap = { onCharTyped(num) }
                     )
                 }
@@ -97,6 +99,8 @@ fun QwertyKeyLayout(
                     subLabel = alt,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = 10,
                     modifier = Modifier.weight(1f),
                     height = keyHeight,
                     palette = palette,
@@ -124,6 +128,8 @@ fun QwertyKeyLayout(
                     subLabel = alt,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = 9,
                     modifier = Modifier.weight(1f),
                     height = keyHeight,
                     palette = palette,
@@ -159,6 +165,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 0,
+                totalColumns = 10,
                 onTap = { onShift() }
             )
 
@@ -175,6 +183,8 @@ fun QwertyKeyLayout(
                     subLabel = alt,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index + 1,
+                    totalColumns = 10,
                     modifier = Modifier.weight(1f),
                     height = keyHeight,
                     palette = palette,
@@ -196,6 +206,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 9,
+                totalColumns = 10,
                 onTap = { onDelete() }
             )
         }
@@ -216,6 +228,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 0,
+                totalColumns = 10,
                 onTap = { onSwitchMode(KeyboardMode.NUMBERS) }
             )
 
@@ -229,6 +243,8 @@ fun QwertyKeyLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = 2,
+                    totalColumns = 10,
                     onTap = { onSwitchMode(KeyboardMode.EMOJI) }
                 )
             }
@@ -244,6 +260,8 @@ fun QwertyKeyLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = 3,
+                    totalColumns = 10,
                     onTap = { onLanguageCycle() },
                     onLongPress = { onLongPressLanguage() }
                 )
@@ -264,6 +282,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 7,
+                totalColumns = 10,
                 onHorizontalDrag = onSpaceDrag,
                 onTap = { onSpace() },
                 onLongPress = { onLongPressLanguage() }
@@ -281,6 +301,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 8,
+                totalColumns = 10,
                 onTap = { onCharTyped(punctChar) },
                 onLongPress = { punctAlt?.let { onCharTyped(it) } }
             )
@@ -295,6 +317,8 @@ fun QwertyKeyLayout(
                 palette = palette,
                 showSubLabel = showKeySubLabels,
                 popupMode = popupMode,
+                columnIndex = 9,
+                totalColumns = 10,
                 onTap = { onEnter() }
             )
         }

@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,8 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -58,16 +60,19 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Custom Radial One-Handed Arc Keyboard Layout with:
- * - Issue 1 Fix: Truncated predictive text inside centered pill bubbles.
- * - Issue 2 Fix: Strictly clipped bounds (Modifier.clipToBounds) with clean crisp background (no blurry overlays).
- * - Issue 3 Fix: Smooth distance/angle alpha transparency fading for outer text and keys blending with background.
+ * Microsoft Word Flow-inspired One-Handed Arc Keyboard Layout:
+ * - Concentric arc tracks for Suggestions, Row 1 (QWERTY), Row 2 (ASDF), Row 3 (ZXCV), and Row 4 (Space/Controls).
+ * - Exact Tangent/Normal letter rotation so all characters face perpendicular to thumb reach line-of-sight.
+ * - Pristine curved divider lines and soft radiating fan gradient.
+ * - Accurate polar coordinate hit detection (Radius & Angle).
+ * - Multi-language support (English, Bangla, Avro).
  */
 data class RadialKey(
     val id: String,
     val displayLabel: String = id,
     val isAlphabetic: Boolean = id.length == 1 && (id[0].isLetter() || id[0].code > 128),
-    val isSpecial: Boolean = false
+    val isSpecial: Boolean = false,
+    val weight: Float = 1.0f
 )
 
 @Composable
@@ -110,24 +115,24 @@ fun CurvedArcKeyboardLayout(
     var showQuickSettings by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Determine color theme colors (No blur, no shadow, clean crisp contrast)
+    // Determine color theme colors with crystal clear contrast & soft fan gradients
     val (bgColor, keyFillColor, textColor, specialTextColor, accentColor, strokeColor) = remember(oneHandedTheme, palette) {
         when (oneHandedTheme) {
             "light_crisp" -> HexColorSet(
-                bg = Color(0xFFF8FAFC),
+                bg = Color(0xFFF1F5F9),
                 keyFill = Color(0xFFE2E8F0),
                 text = Color(0xFF0F172A),
-                specialText = Color(0xFF1E293B),
+                specialText = Color(0xFF334155),
                 accent = Color(0xFF0284C7),
-                stroke = Color(0xFFCBD5E1)
+                stroke = Color(0xFF94A3B8)
             )
             "amoled_dark" -> HexColorSet(
-                bg = Color(0xFF000000),
+                bg = Color(0xFF050505),
                 keyFill = Color(0xFF18181B),
-                text = Color(0xFFFFFFFF),
-                specialText = Color(0xFFE4E4E7),
+                text = Color(0xFFFAFAFA),
+                specialText = Color(0xFFA1A1AA),
                 accent = Color(0xFF06B6D4),
-                stroke = Color(0xFF27272A)
+                stroke = Color(0xFF3F3F46)
             )
             "rose_pastel" -> HexColorSet(
                 bg = Color(0xFFFFF1F2),
@@ -135,7 +140,7 @@ fun CurvedArcKeyboardLayout(
                 text = Color(0xFF881337),
                 specialText = Color(0xFF9F1239),
                 accent = Color(0xFFE11D48),
-                stroke = Color(0xFFFECDD3)
+                stroke = Color(0xFFFDA4AF)
             )
             "sky_cyan" -> HexColorSet(
                 bg = Color(0xFFECFEFF),
@@ -143,74 +148,87 @@ fun CurvedArcKeyboardLayout(
                 text = Color(0xFF0C4A6E),
                 specialText = Color(0xFF0369A1),
                 accent = Color(0xFF0D9488),
-                stroke = Color(0xFFA5F3FC)
+                stroke = Color(0xFF7DD3FC)
             )
             else -> HexColorSet(
                 bg = palette.keyboardBackground,
                 keyFill = palette.keyBackground,
                 text = palette.textColor,
-                specialText = palette.textColor.copy(alpha = 0.85f),
+                specialText = palette.secondaryTextColor,
                 accent = palette.accentColor,
-                stroke = palette.dividerColor.copy(alpha = 0.4f)
+                stroke = palette.dividerColor.copy(alpha = 0.6f)
             )
         }
     }
 
-    // Row 1: QWERTY + Backspace (Left to Right)
+    // Row 1: QWERTY + Backspace (Left to Right along arc)
     val row1Keys = remember(currentLanguage, shiftState) {
         when (currentLanguage) {
             "bangla" -> listOf("ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ", "⌫")
             else -> listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "⌫")
         }.map { label ->
             val finalLabel = if (label.length == 1 && label[0].isLetter() && shiftState.isUppercase) label.uppercase() else label
-            RadialKey(id = finalLabel, displayLabel = if (label == "⌫") "←" else finalLabel, isSpecial = label == "⌫")
+            RadialKey(
+                id = finalLabel,
+                displayLabel = if (label == "⌫") "←" else finalLabel,
+                isSpecial = label == "⌫",
+                weight = if (label == "⌫") 1.15f else 1.0f
+            )
         }
     }
 
-    // Row 2: ASDF + Enter (Left to Right)
+    // Row 2: ASDF + Enter (Left to Right along arc)
     val row2Keys = remember(currentLanguage, shiftState) {
         when (currentLanguage) {
             "bangla" -> listOf("ট", "ঠ", "ড", "ঢ", "ণ", "ত", "থ", "দ", "ধ", enterLabel)
             else -> listOf("a", "s", "d", "f", "g", "h", "j", "k", "l", "↵")
         }.map { label ->
             val finalLabel = if (label.length == 1 && label[0].isLetter() && shiftState.isUppercase) label.uppercase() else label
-            RadialKey(id = finalLabel, displayLabel = if (label == "↵" || label == enterLabel) "↵" else finalLabel, isSpecial = label == "↵" || label == enterLabel)
+            RadialKey(
+                id = finalLabel,
+                displayLabel = if (label == "↵" || label == enterLabel) "↵" else finalLabel,
+                isSpecial = label == "↵" || label == enterLabel,
+                weight = if (label == "↵" || label == enterLabel) 1.15f else 1.0f
+            )
         }
     }
 
-    // Row 3: Shift + ZXCV + Symbols (Left to Right)
+    // Row 3: Shift + ZXCV + Symbols (Left to Right along arc)
     val row3Keys = remember(currentLanguage, shiftState) {
         when (currentLanguage) {
             "bangla" -> listOf("⇧", "ন", "প", "ফ", "ব", "ভ", "ম", "য", "র", "ল")
             else -> listOf("⇧", "z", "x", "c", "v", "b", "n", "m", "?!,", ".")
         }.map { label ->
             val finalLabel = if (label.length == 1 && label[0].isLetter() && shiftState.isUppercase) label.uppercase() else label
-            RadialKey(id = finalLabel, displayLabel = if (label == "⇧") "↑" else finalLabel, isSpecial = label == "⇧" || label == "?!,")
+            val isShift = label == "⇧"
+            val display = if (isShift) (if (shiftState.isCapsLock) "⇪" else "↑") else finalLabel
+            RadialKey(
+                id = finalLabel,
+                displayLabel = display,
+                isSpecial = isShift || label == "?!,",
+                weight = if (isShift) 1.2f else if (label == "?!,") 1.1f else 1.0f
+            )
         }
     }
 
     // Row 4: Inner Arc Controls (Emoji, Symbols, Space, Language)
     val row4Keys = listOf(
-        RadialKey(id = "😃", displayLabel = "😃", isAlphabetic = false, isSpecial = true),
-        RadialKey(id = "?123", displayLabel = "?123", isAlphabetic = false, isSpecial = true),
-        RadialKey(id = "space", displayLabel = "space", isAlphabetic = false, isSpecial = true),
-        RadialKey(id = "🌐", displayLabel = "🌐", isAlphabetic = false, isSpecial = true)
+        RadialKey(id = "😃", displayLabel = "😃", isAlphabetic = false, isSpecial = true, weight = 1.0f),
+        RadialKey(id = "?123", displayLabel = "?123", isAlphabetic = false, isSpecial = true, weight = 1.1f),
+        RadialKey(id = "space", displayLabel = "space", isAlphabetic = false, isSpecial = true, weight = 2.8f),
+        RadialKey(id = "🌐", displayLabel = "🌐", isAlphabetic = false, isSpecial = true, weight = 1.0f)
     )
 
-    // Truncate suggestions to 3-4 letters max ("How", "Tha", "Hel")
+    // Suggestion words along the top-most fan arc
     val displaySuggestions = remember(suggestions, oneHandedShowSuggestions) {
         if (!oneHandedShowSuggestions) emptyList()
         else {
-            val rawList = if (suggestions.isNotEmpty()) suggestions.take(4) else listOf(
+            if (suggestions.isNotEmpty()) suggestions.take(4) else listOf(
                 SuggestionItem(displayText = "His", replacementText = "His"),
                 SuggestionItem(displayText = "How", replacementText = "How"),
                 SuggestionItem(displayText = "Thanks", replacementText = "Thanks"),
                 SuggestionItem(displayText = "Hello", replacementText = "Hello")
             )
-            rawList.map { item ->
-                val truncatedText = if (item.displayText.length > 4) item.displayText.take(3) + "…" else item.displayText
-                item.copy(displayText = truncatedText)
-            }
         }
     }
 
@@ -221,64 +239,64 @@ fun CurvedArcKeyboardLayout(
             .clipToBounds()
             .background(bgColor)
     ) {
-        // Floating Dock Controls (⇆ Switch Side, ⚙️ One-Handed Settings, and ⛶ Expand)
+        // Floating Dock Controls on opposite corner (⇆ Switch Side, ⚙️ Settings, ⛶ Expand)
         val dockAlignment = if (isRight) Alignment.TopStart else Alignment.TopEnd
         Row(
             modifier = Modifier
                 .align(dockAlignment)
-                .padding(10.dp)
+                .padding(8.dp)
                 .clip(CircleShape)
-                .background(keyFillColor)
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                .background(keyFillColor.copy(alpha = 0.9f))
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(bgColor)
+                    .background(bgColor.copy(alpha = 0.8f))
                     .clickable { onSwitchSide() },
                 contentAlignment = Alignment.Center
             ) {
-                Text("⇆", color = textColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text("⇆", color = textColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(bgColor)
+                    .background(bgColor.copy(alpha = 0.8f))
                     .clickable { showQuickSettings = true },
                 contentAlignment = Alignment.Center
             ) {
-                Text("⚙️", color = textColor, fontSize = 16.sp)
+                Text("⚙️", color = textColor, fontSize = 14.sp)
             }
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(bgColor)
+                    .background(bgColor.copy(alpha = 0.8f))
                     .clickable { onExpandNormal() },
                 contentAlignment = Alignment.Center
             ) {
-                Text("⛶", color = textColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("⛶", color = textColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
 
-        // Curved Canvas Layout with Issue 2 Fix (clipToBounds)
+        // Custom Curved Canvas Layout
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
                 .clipToBounds()
-                .pointerInput(row1Keys, row2Keys, row3Keys, displaySuggestions, mode, shiftState, oneHandedArcScale, oneHandedShowSuggestions) {
+                .pointerInput(row1Keys, row2Keys, row3Keys, row4Keys, displaySuggestions, mode, shiftState, oneHandedArcScale, oneHandedShowSuggestions) {
                     awaitEachGesture {
                         val down = awaitFirstDown()
                         val w = size.width.toFloat()
                         val h = size.height.toFloat()
 
-                        // Pivot coordinates
-                        val px = if (isRight) w * 1.06f else -w * 0.06f
-                        val py = h * 1.12f
+                        // Pivot coordinates (anchored right or left corner)
+                        val px = if (isRight) w * 0.96f else w * 0.04f
+                        val py = h * 1.04f
 
                         val dx = down.position.x - px
                         val dy = py - down.position.y
@@ -286,26 +304,26 @@ fun CurvedArcKeyboardLayout(
                         var angleDeg = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
                         if (angleDeg < 0) angleDeg += 360f
 
-                        val maxR = max(w, h) * 1.18f * oneHandedArcScale
+                        val baseR = max(w, h) * 1.08f * oneHandedArcScale
 
-                        // Radial Band Boundaries
-                        val rSuggIn = maxR * 0.83f
-                        val rSuggOut = maxR * 0.98f
+                        // Concentric Arc Radii
+                        val rSuggIn = baseR * 0.86f
+                        val rSuggOut = baseR * 0.99f
 
-                        val r1In = maxR * 0.67f
-                        val r1Out = maxR * 0.82f
+                        val r1In = baseR * 0.69f
+                        val r1Out = baseR * 0.85f
 
-                        val r2In = maxR * 0.51f
-                        val r2Out = maxR * 0.66f
+                        val r2In = baseR * 0.52f
+                        val r2Out = baseR * 0.68f
 
-                        val r3In = maxR * 0.35f
-                        val r3Out = maxR * 0.50f
+                        val r3In = baseR * 0.35f
+                        val r3Out = baseR * 0.51f
 
-                        val r4In = maxR * 0.17f
-                        val r4Out = maxR * 0.33f
+                        val r4In = baseR * 0.16f
+                        val r4Out = baseR * 0.34f
 
-                        val minAngle = if (isRight) 95f else 5f
-                        val maxAngle = if (isRight) 175f else 85f
+                        val minAngle = if (isRight) 98f else 4f
+                        val maxAngle = if (isRight) 176f else 82f
                         val sweepTotal = maxAngle - minAngle
 
                         var hitRow = -1
@@ -314,35 +332,46 @@ fun CurvedArcKeyboardLayout(
                         var hitSugg: SuggestionItem? = null
 
                         if (angleDeg in minAngle..maxAngle) {
+                            fun findWeightedIndex(keys: List<RadialKey>, normalizedAngle: Float): Int {
+                                val totalWeight = keys.sumOf { it.weight.toDouble() }.toFloat()
+                                val targetWeight = normalizedAngle * totalWeight
+                                var currentWeight = 0f
+                                for (i in keys.indices) {
+                                    currentWeight += keys[i].weight
+                                    if (targetWeight <= currentWeight || i == keys.lastIndex) {
+                                        return i
+                                    }
+                                }
+                                return keys.lastIndex
+                            }
+
+                            val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
+                            val clampedNorm = norm.coerceIn(0f, 1f)
+
                             when {
                                 displaySuggestions.isNotEmpty() && dist in rSuggIn..rSuggOut -> {
                                     hitRow = 0
-                                    val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
-                                    hitCol = (norm * displaySuggestions.size).toInt().coerceIn(0, displaySuggestions.size - 1)
+                                    hitCol = (clampedNorm * displaySuggestions.size).toInt().coerceIn(0, displaySuggestions.size - 1)
                                     hitSugg = displaySuggestions[hitCol]
                                 }
                                 dist in r1In..r1Out -> {
                                     hitRow = 1
-                                    val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
-                                    hitCol = (norm * row1Keys.size).toInt().coerceIn(0, row1Keys.size - 1)
+                                    hitCol = findWeightedIndex(row1Keys, clampedNorm)
                                     hitKey = row1Keys[hitCol]
                                 }
                                 dist in r2In..r2Out -> {
                                     hitRow = 2
-                                    val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
-                                    hitCol = (norm * row2Keys.size).toInt().coerceIn(0, row2Keys.size - 1)
+                                    hitCol = findWeightedIndex(row2Keys, clampedNorm)
                                     hitKey = row2Keys[hitCol]
                                 }
                                 dist in r3In..r3Out -> {
                                     hitRow = 3
-                                    val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
-                                    hitCol = (norm * row3Keys.size).toInt().coerceIn(0, row3Keys.size - 1)
+                                    hitCol = findWeightedIndex(row3Keys, clampedNorm)
                                     hitKey = row3Keys[hitCol]
                                 }
                                 dist in r4In..r4Out -> {
                                     hitRow = 4
-                                    val norm = if (isRight) (maxAngle - angleDeg) / sweepTotal else (angleDeg - minAngle) / sweepTotal
-                                    hitCol = (norm * row4Keys.size).toInt().coerceIn(0, row4Keys.size - 1)
+                                    hitCol = findWeightedIndex(row4Keys, clampedNorm)
                                     hitKey = row4Keys[hitCol]
                                 }
                             }
@@ -376,7 +405,7 @@ fun CurvedArcKeyboardLayout(
                             }
                         }
 
-                        // Wait for UP event
+                        // Wait for UP gesture event
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
@@ -391,7 +420,7 @@ fun CurvedArcKeyboardLayout(
                                     } else if (hitKey != null) {
                                         when (hitKey.id) {
                                             "⌫", "←" -> onDelete()
-                                            "⇧", "↑" -> onShiftToggle()
+                                            "⇧", "↑", "⇪" -> onShiftToggle()
                                             "↵", enterLabel -> onEnter()
                                             "space" -> onSpace()
                                             "?123" -> onSwitchMode(KeyboardMode.NUMBERS)
@@ -410,49 +439,58 @@ fun CurvedArcKeyboardLayout(
             val w = size.width
             val h = size.height
 
-            val px = if (isRight) w * 1.06f else -w * 0.06f
-            val py = h * 1.12f
+            // Pivot coordinates
+            val px = if (isRight) w * 0.96f else w * 0.04f
+            val py = h * 1.04f
 
-            val maxR = max(w, h) * 1.18f * oneHandedArcScale
+            val baseR = max(w, h) * 1.08f * oneHandedArcScale
 
-            // Radial Band Boundaries
-            val rSuggIn = maxR * 0.83f
-            val rSuggOut = maxR * 0.98f
+            // Concentric Band Boundaries
+            val rSuggIn = baseR * 0.86f
+            val rSuggOut = baseR * 0.99f
 
-            val r1In = maxR * 0.67f
-            val r1Out = maxR * 0.82f
+            val r1In = baseR * 0.69f
+            val r1Out = baseR * 0.85f
 
-            val r2In = maxR * 0.51f
-            val r2Out = maxR * 0.66f
+            val r2In = baseR * 0.52f
+            val r2Out = baseR * 0.68f
 
-            val r3In = maxR * 0.35f
-            val r3Out = maxR * 0.50f
+            val r3In = baseR * 0.35f
+            val r3Out = baseR * 0.51f
 
-            val r4In = maxR * 0.17f
-            val r4Out = maxR * 0.33f
+            val r4In = baseR * 0.16f
+            val r4Out = baseR * 0.34f
 
-            val minAngle = if (isRight) 95f else 5f
-            val maxAngle = if (isRight) 175f else 85f
+            val minAngle = if (isRight) 98f else 4f
+            val maxAngle = if (isRight) 176f else 82f
             val sweepTotal = maxAngle - minAngle
 
-            // Clean, non-blurry, crisp background fill
+            // Draw smooth radiating fan gradient background
             drawCircle(
-                color = keyFillColor.copy(alpha = 0.5f),
-                radius = maxR * 0.98f,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        keyFillColor.copy(alpha = 0.85f),
+                        keyFillColor.copy(alpha = 0.45f),
+                        bgColor.copy(alpha = 0.15f)
+                    ),
+                    center = Offset(px, py),
+                    radius = rSuggOut
+                ),
+                radius = rSuggOut,
                 center = Offset(px, py)
             )
 
             val textPaint = Paint().apply {
                 color = textColor.toArgb()
-                textSize = 19.dp.toPx()
+                textSize = 21.dp.toPx()
                 isAntiAlias = true
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 textAlign = Paint.Align.CENTER
             }
 
             val specialPaint = Paint().apply {
                 color = specialTextColor.toArgb()
-                textSize = 16.dp.toPx()
+                textSize = 17.dp.toPx()
                 isAntiAlias = true
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
@@ -460,62 +498,59 @@ fun CurvedArcKeyboardLayout(
 
             val suggPaint = Paint().apply {
                 color = textColor.toArgb()
-                textSize = 14.dp.toPx()
+                textSize = 15.dp.toPx()
                 isAntiAlias = true
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 textAlign = Paint.Align.CENTER
             }
 
-            // Function to draw arc separator line
-            fun drawArcSeparator(r: Float) {
+            // Function to draw smooth concentric arc divider lines
+            fun drawConcentricDivider(r: Float, alpha: Float = 0.5f, strokeWidthDp: Float = 1.0f) {
                 drawArc(
-                    color = strokeColor,
+                    color = strokeColor.copy(alpha = alpha),
                     startAngle = -maxAngle,
                     sweepAngle = sweepTotal,
                     useCenter = false,
                     topLeft = Offset(px - r, py - r),
                     size = Size(r * 2, r * 2),
-                    style = Stroke(width = 1.2.dp.toPx())
+                    style = Stroke(width = strokeWidthDp.dp.toPx())
                 )
             }
 
-            // Draw arc separators
+            // Draw concentric divider lines exactly like the reference design
             if (displaySuggestions.isNotEmpty()) {
-                drawArcSeparator(rSuggOut)
-                drawArcSeparator(rSuggIn)
+                drawConcentricDivider(rSuggOut, alpha = 0.4f, strokeWidthDp = 1.2f)
+                drawConcentricDivider(rSuggIn, alpha = 0.5f, strokeWidthDp = 1.0f)
             }
-            drawArcSeparator(r1In)
-            drawArcSeparator(r2In)
-            drawArcSeparator(r3In)
-            drawArcSeparator(r4In)
+            drawConcentricDivider(r1In, alpha = 0.5f, strokeWidthDp = 1.0f)
+            drawConcentricDivider(r2In, alpha = 0.5f, strokeWidthDp = 1.0f)
+            drawConcentricDivider(r3In, alpha = 0.5f, strokeWidthDp = 1.0f)
+            drawConcentricDivider(r4In, alpha = 0.35f, strokeWidthDp = 1.0f)
 
-            // Helper function for Issue 3: Distance and angle-based alpha transparency fading
-            fun calculateAlphaFade(aMid: Float): Float {
-                val angleFromCenter = if (isRight) (maxAngle - aMid) / sweepTotal else (aMid - minAngle) / sweepTotal
-                return (1.0f - (angleFromCenter * 0.70f)).coerceIn(0.15f, 1.0f)
-            }
-
-            // Function to draw ring keys
+            // Function to draw curved ring keys with accurate tangent rotation
             fun drawRingKeys(
                 keys: List<RadialKey>,
                 rIn: Float,
                 rOut: Float,
                 rowIndex: Int
             ) {
-                val stepAngle = sweepTotal / keys.size
+                val totalWeight = keys.sumOf { it.weight.toDouble() }.toFloat()
                 val rMid = (rIn + rOut) / 2f
+                var accumulatedWeight = 0f
 
                 for (i in keys.indices) {
-                    val a1 = if (isRight) maxAngle - i * stepAngle else minAngle + i * stepAngle
-                    val a2 = if (isRight) a1 - stepAngle else a1 + stepAngle
+                    val key = keys[i]
+                    val startFraction = accumulatedWeight / totalWeight
+                    accumulatedWeight += key.weight
+                    val endFraction = accumulatedWeight / totalWeight
+
+                    val a1 = if (isRight) maxAngle - startFraction * sweepTotal else minAngle + startFraction * sweepTotal
+                    val a2 = if (isRight) maxAngle - endFraction * sweepTotal else minAngle + endFraction * sweepTotal
                     val aMid = (a1 + a2) / 2f
 
                     val isPressed = activePressedKey == Pair(rowIndex, i)
 
-                    // Issue 3: Alpha Transparency Fading based on angle distance
-                    val alphaFade = calculateAlphaFade(aMid)
-
-                    // Draw touch press highlight
+                    // Draw key sector highlight on press
                     if (isPressed) {
                         val path = Path().apply {
                             val startA = if (isRight) -a1 else -a2
@@ -534,47 +569,56 @@ fun CurvedArcKeyboardLayout(
                             )
                             close()
                         }
-                        drawPath(path, color = accentColor.copy(alpha = 0.40f * alphaFade))
+                        drawPath(path, color = accentColor.copy(alpha = 0.45f))
                     }
 
-                    // Key Label Position
+                    // Key Center Position
                     val kx = px + rMid * cos(Math.toRadians(aMid.toDouble())).toFloat()
                     val ky = py - rMid * sin(Math.toRadians(aMid.toDouble())).toFloat()
 
                     drawContext.canvas.nativeCanvas.save()
                     drawContext.canvas.nativeCanvas.translate(kx, ky)
 
-                    // Tangent rotation along the arc (if enabled)
-                    val rot = if (oneHandedRotateText) {
-                        if (isRight) (135f - aMid) * 0.45f else (aMid - 45f) * 0.45f
-                    } else 0f
+                    // Precise Tangent Rotation: perpendicular to radial ray to thumb!
+                    if (oneHandedRotateText) {
+                        val tangentRot = if (isRight) {
+                            -(aMid - 90f) + 42f
+                        } else {
+                            -(aMid - 90f) - 42f
+                        }
+                        drawContext.canvas.nativeCanvas.rotate(tangentRot)
+                    }
 
-                    drawContext.canvas.nativeCanvas.rotate(rot)
-
-                    val key = keys[i]
                     val activePaint = if (key.isSpecial) specialPaint else textPaint
-                    activePaint.textSize = if (key.displayLabel.length > 2) 15.dp.toPx() else 19.dp.toPx()
-                    
-                    val baseColor = if (key.isSpecial) specialTextColor else textColor
-                    activePaint.color = baseColor.copy(alpha = alphaFade).toArgb()
+                    activePaint.textSize = when {
+                        key.id == "space" -> 14.dp.toPx()
+                        key.displayLabel.length > 2 -> 13.dp.toPx()
+                        key.isSpecial -> 18.dp.toPx()
+                        else -> 21.dp.toPx()
+                    }
+                    activePaint.color = if (key.isSpecial) specialTextColor.toArgb() else textColor.toArgb()
 
-                    drawContext.canvas.nativeCanvas.drawText(key.displayLabel, 0f, 6.dp.toPx(), activePaint)
+                    drawContext.canvas.nativeCanvas.drawText(
+                        key.displayLabel,
+                        0f,
+                        7.dp.toPx(),
+                        activePaint
+                    )
 
                     drawContext.canvas.nativeCanvas.restore()
                 }
             }
 
-            // Draw Suggestion Arc Ring with Circular Bubble Pills & Transparency Fading
+            // Draw Top Suggestion Arc Ring
             if (displaySuggestions.isNotEmpty()) {
                 val suggStep = sweepTotal / displaySuggestions.size
                 val rSuggMid = (rSuggIn + rSuggOut) / 2f
+
                 for (i in displaySuggestions.indices) {
                     val a1 = if (isRight) maxAngle - i * suggStep else minAngle + i * suggStep
                     val a2 = if (isRight) a1 - suggStep else a1 + suggStep
                     val aMid = (a1 + a2) / 2f
                     val isPressed = activePressedKey == Pair(0, i)
-
-                    val alphaFade = calculateAlphaFade(aMid)
 
                     val kx = px + rSuggMid * cos(Math.toRadians(aMid.toDouble())).toFloat()
                     val ky = py - rSuggMid * sin(Math.toRadians(aMid.toDouble())).toFloat()
@@ -582,41 +626,26 @@ fun CurvedArcKeyboardLayout(
                     drawContext.canvas.nativeCanvas.save()
                     drawContext.canvas.nativeCanvas.translate(kx, ky)
 
-                    val rot = if (oneHandedRotateText) {
-                        if (isRight) (135f - aMid) * 0.45f else (aMid - 45f) * 0.45f
-                    } else 0f
-
-                    drawContext.canvas.nativeCanvas.rotate(rot)
-
-                    val bubbleW = 54.dp.toPx()
-                    val bubbleH = 26.dp.toPx()
-
-                    val bubbleBgColor = if (isPressed) {
-                        accentColor.copy(alpha = 0.65f * alphaFade)
-                    } else {
-                        keyFillColor.copy(alpha = 0.90f * alphaFade)
+                    if (oneHandedRotateText) {
+                        val tangentRot = if (isRight) {
+                            -(aMid - 90f) + 42f
+                        } else {
+                            -(aMid - 90f) - 42f
+                        }
+                        drawContext.canvas.nativeCanvas.rotate(tangentRot)
                     }
 
-                    // Bubble fill
-                    drawRoundRect(
-                        color = bubbleBgColor,
-                        topLeft = Offset(-bubbleW / 2f, -bubbleH / 2f),
-                        size = Size(bubbleW, bubbleH),
-                        cornerRadius = CornerRadius(13.dp.toPx(), 13.dp.toPx())
-                    )
+                    if (isPressed) {
+                        drawCircle(
+                            color = accentColor.copy(alpha = 0.35f),
+                            radius = 24.dp.toPx()
+                        )
+                    }
 
-                    // Bubble subtle outline
-                    drawRoundRect(
-                        color = strokeColor.copy(alpha = 0.40f * alphaFade),
-                        topLeft = Offset(-bubbleW / 2f, -bubbleH / 2f),
-                        size = Size(bubbleW, bubbleH),
-                        cornerRadius = CornerRadius(13.dp.toPx(), 13.dp.toPx()),
-                        style = Stroke(width = 1.2.dp.toPx())
-                    )
-
-                    suggPaint.color = textColor.copy(alpha = alphaFade).toArgb()
+                    suggPaint.color = (if (isPressed) accentColor else textColor).toArgb()
+                    val textToDraw = displaySuggestions[i].displayText
                     drawContext.canvas.nativeCanvas.drawText(
-                        displaySuggestions[i].displayText,
+                        textToDraw,
                         0f,
                         5.dp.toPx(),
                         suggPaint
@@ -626,14 +655,14 @@ fun CurvedArcKeyboardLayout(
                 }
             }
 
-            // Draw Keyboard Rings 1 to 4
+            // Draw the 4 keyboard rings
             drawRingKeys(row1Keys, r1In, r1Out, 1)
             drawRingKeys(row2Keys, r2In, r2Out, 2)
             drawRingKeys(row3Keys, r3In, r3Out, 3)
             drawRingKeys(row4Keys, r4In, r4Out, 4)
         }
 
-        // Quick One-Handed Settings Floating Overlay Modal
+        // Quick Settings Sheet Modal
         if (showQuickSettings) {
             OneHandedQuickSettingsSheet(
                 oneHandedHeightDp = oneHandedHeightDp,
@@ -690,8 +719,8 @@ private fun OneHandedQuickSettingsSheet(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
-                .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surface)
                 .clickable(enabled = false) {}
                 .padding(16.dp)
         ) {
@@ -702,16 +731,16 @@ private fun OneHandedQuickSettingsSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "⚙️ One-Handed Settings",
+                        text = "⚙️ One-Handed Arc Settings",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Box(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { onDismiss() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -725,10 +754,10 @@ private fun OneHandedQuickSettingsSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Keyboard Size (Height)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Text("${oneHandedHeightDp}dp", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
+                        Text("Keyboard Height", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text("${oneHandedHeightDp}dp", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
-                    androidx.compose.material3.Slider(
+                    Slider(
                         value = oneHandedHeightDp.toFloat(),
                         onValueChange = { onUpdateHeightDp(it.toInt()) },
                         valueRange = 260f..380f,
@@ -743,9 +772,9 @@ private fun OneHandedQuickSettingsSheet(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Thumb Reach (Arc Scale)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Text("${(oneHandedArcScale * 100).toInt()}%", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
+                        Text("${(oneHandedArcScale * 100).toInt()}%", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
-                    androidx.compose.material3.Slider(
+                    Slider(
                         value = oneHandedArcScale,
                         onValueChange = { onUpdateArcScale(it) },
                         valueRange = 0.80f..1.25f,
@@ -771,8 +800,8 @@ private fun OneHandedQuickSettingsSheet(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                                .background(if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                                 .clickable { onUpdateTheme(id) }
                                 .padding(vertical = 6.dp),
                             contentAlignment = Alignment.Center
@@ -781,7 +810,7 @@ private fun OneHandedQuickSettingsSheet(
                                 text = label,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.onPrimary else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -795,9 +824,9 @@ private fun OneHandedQuickSettingsSheet(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Rotate Letters on Arc", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Text(if (oneHandedRotateText) "Rotated along curve" else "Straight upright text", fontSize = 11.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if (oneHandedRotateText) "Rotated along curve" else "Straight upright text", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    androidx.compose.material3.Switch(
+                    Switch(
                         checked = oneHandedRotateText,
                         onCheckedChange = { onUpdateRotateText(it) }
                     )
@@ -809,8 +838,8 @@ private fun OneHandedQuickSettingsSheet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Predictive Word Bubbles", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                    androidx.compose.material3.Switch(
+                    Text("Predictive Word Suggestions", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Switch(
                         checked = oneHandedShowSuggestions,
                         onCheckedChange = { onUpdateShowSuggestions(it) }
                     )

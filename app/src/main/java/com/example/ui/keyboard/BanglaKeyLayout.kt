@@ -50,7 +50,7 @@ fun BanglaKeyLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            rows[0].forEach { char ->
+            rows[0].forEachIndexed { index, char ->
                 KeyboardKeyView(
                     label = char,
                     modifier = Modifier.weight(1f),
@@ -58,6 +58,8 @@ fun BanglaKeyLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = rows[0].size,
                     onHoldProgressUpdate = onHoldProgressUpdate,
                     onFiveSecondHoldComplete = onFiveSecondHoldComplete,
                     onHoldCancelled = onHoldCancelled,
@@ -71,7 +73,7 @@ fun BanglaKeyLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            rows[1].forEach { char ->
+            rows[1].forEachIndexed { index, char ->
                 KeyboardKeyView(
                     label = char,
                     modifier = Modifier.weight(1f),
@@ -79,6 +81,8 @@ fun BanglaKeyLayout(
                     palette = palette,
                     showSubLabel = showKeySubLabels,
                     popupMode = popupMode,
+                    columnIndex = index,
+                    totalColumns = rows[1].size,
                     onHoldProgressUpdate = onHoldProgressUpdate,
                     onFiveSecondHoldComplete = onFiveSecondHoldComplete,
                     onHoldCancelled = onHoldCancelled,

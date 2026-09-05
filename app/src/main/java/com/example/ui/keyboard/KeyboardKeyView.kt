@@ -60,6 +60,7 @@ import com.example.theme.KeyboardPalette
 import com.example.theme.KittyThemeIcons
 import com.example.theme.PuppyPopupCharacter
 import com.example.theme.ReferenceMinimalIcons
+import com.example.theme.RgbSpectrumUtils
 import com.example.theme.SpacebarStyle
 import com.example.theme.StrawberryThemeIcons
 import com.example.theme.ThemeSpecialIconStyle
@@ -84,6 +85,8 @@ fun KeyboardKeyView(
     palette: KeyboardPalette,
     showPreview: Boolean = true,
     isAlphabeticKey: Boolean = label.length == 1 && (label[0].isLetter() || label[0].code > 128),
+    columnIndex: Int = -1,
+    totalColumns: Int = 10,
     onHoldProgressUpdate: ((Float) -> Unit)? = null,
     onFiveSecondHoldComplete: (() -> Unit)? = null,
     onHoldCancelled: (() -> Unit)? = null,
@@ -103,8 +106,17 @@ fun KeyboardKeyView(
     val isKittenSpecialKey = palette.specialIconStyle == ThemeSpecialIconStyle.KAWAII_KITTEN &&
             (label.lowercase() == "s" || label.lowercase() == "i")
 
+    val isRgbNeon = palette.specialIconStyle == ThemeSpecialIconStyle.RGB_NEON
+    val rgbNeonColor = remember(label, columnIndex, totalColumns) {
+        RgbSpectrumUtils.getColorForKey(label, columnIndex, totalColumns)
+    }
+
     // Determine Key Background Color based on Theme & State
     val bgColor = when {
+        isRgbNeon -> {
+            if (isPressed) rgbNeonColor.copy(alpha = 0.28f)
+            else palette.keyBackground
+        }
         isPressed -> when {
             palette.popupStyle == KeyPopupStyle.PUPPY_CHARACTER && label.length == 1 && label[0].isLetter() -> palette.keyPressedBackground // Vibrant blue for Puppy Pop!
             isCapsLock -> palette.accentColor.copy(alpha = 0.85f)
@@ -126,6 +138,9 @@ fun KeyboardKeyView(
 
     // Determine Label Text Color based on Theme & State
     val labelColor = when {
+        isRgbNeon -> {
+            if (isPressed) Color.White else rgbNeonColor
+        }
         isRetroMech -> {
             when {
                 isKeyWhite -> {
@@ -155,11 +170,12 @@ fun KeyboardKeyView(
     // Key shape & elevation from theme
     val cornerShape = RoundedCornerShape(palette.keyCornerRadius)
     val elevation = if (isPressed) palette.pressedElevation else palette.keyElevation
-    val borderColor = if (isPrimaryAction && palette.specialIconStyle != ThemeSpecialIconStyle.STRAWBERRY_DESSERT) {
-        Color.Transparent
-    } else {
-        palette.keyBorderColor
+    val borderColor = when {
+        isRgbNeon -> if (isPressed) Color.White else rgbNeonColor
+        isPrimaryAction && palette.specialIconStyle != ThemeSpecialIconStyle.STRAWBERRY_DESSERT -> Color.Transparent
+        else -> palette.keyBorderColor
     }
+    val effectiveBorderWidth = if (isRgbNeon) 1.8.dp else palette.keyBorderWidth
 
     val gestureModifier = if (isSpaceBar && (onHorizontalDrag != null || onLongPress != null)) {
         Modifier.pointerInput(onHorizontalDrag, onLongPress) {
@@ -367,12 +383,12 @@ fun KeyboardKeyView(
             .shadow(
                 elevation = elevation,
                 shape = cornerShape,
-                spotColor = Color(0x35000000)
+                spotColor = if (isRgbNeon && isPressed) rgbNeonColor else Color(0x35000000)
             )
             .clip(cornerShape)
             .background(bgColor)
             .border(
-                width = palette.keyBorderWidth,
+                width = effectiveBorderWidth,
                 color = borderColor,
                 shape = cornerShape
             )
@@ -390,6 +406,20 @@ fun KeyboardKeyView(
         modifier = keyModifier,
         contentAlignment = Alignment.Center
     ) {
+        // Neon Press Glow Burst / Typing Ripple Effect for RGB Theme
+        if (isRgbNeon && isPressed) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width
+                val h = size.height
+                // Soft radial glow aura behind character
+                drawCircle(
+                    color = rgbNeonColor.copy(alpha = 0.35f),
+                    radius = kotlin.math.max(w, h) * 0.7f,
+                    center = Offset(w * 0.5f, h * 0.5f)
+                )
+            }
+        }
+
         // Main key surface content
         Box(
             modifier = Modifier
@@ -399,6 +429,40 @@ fun KeyboardKeyView(
         ) {
             // Check for theme-specific special icon drawings
             when {
+                // RGB CHROMA NEON SPECIAL DRAWINGS (Reference image match!)
+                isRgbNeon && (label == "⇧" || label == "⬆" || label == "⇪") -> {
+                    RgbSpectrumUtils.RgbShiftIcon(
+                        size = (height * 0.52f).coerceIn(18.dp, 24.dp),
+                        color = if (isPressed) Color.White else rgbNeonColor,
+                        isShifted = isShiftActive,
+                        isCapsLock = isCapsLock
+                    )
+                }
+                isRgbNeon && label == "⌫" -> {
+                    RgbSpectrumUtils.RgbBackspaceIcon(
+                        size = (height * 0.52f).coerceIn(18.dp, 24.dp),
+                        color = if (isPressed) Color.White else rgbNeonColor
+                    )
+                }
+                isRgbNeon && label == "🌐" -> {
+                    RgbSpectrumUtils.RgbGlobeIcon(
+                        size = (height * 0.50f).coerceIn(18.dp, 22.dp),
+                        color = if (isPressed) Color.White else rgbNeonColor
+                    )
+                }
+                isRgbNeon && label == "😊" -> {
+                    RgbSpectrumUtils.RgbEmojiIcon(
+                        size = (height * 0.50f).coerceIn(18.dp, 22.dp),
+                        color = if (isPressed) Color.White else rgbNeonColor
+                    )
+                }
+                isRgbNeon && (isPrimaryAction || label == "↵" || label == "return" || label == "Go" || label == "Done" || label == "Search") -> {
+                    RgbSpectrumUtils.RgbReturnKeyContent(
+                        label = label,
+                        color = if (isPressed) Color.White else rgbNeonColor
+                    )
+                }
+
                 // KAWAII KITTEN SPECIAL DRAWINGS
                 palette.specialIconStyle == ThemeSpecialIconStyle.KAWAII_KITTEN && (label == "⇧" || label == "⬆" || label == "⇪") -> {
                     KittyThemeIcons.KittyShiftIcon(
@@ -560,6 +624,20 @@ fun KeyboardKeyView(
                 else -> {
                     if (isSpaceBar) {
                         when (palette.spacebarStyle) {
+                            SpacebarStyle.RGB_NEON_BAR -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "space",
+                                        color = rgbNeonColor,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        letterSpacing = 1.sp
+                                    )
+                                }
+                            }
                             SpacebarStyle.REFERENCE_MINIMAL_SPACE -> {
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
@@ -775,6 +853,28 @@ fun KeyboardKeyView(
         // Popup Preview when pressed based on popupMode
         if (isPressed && showPreview && popupMode != "disabled" && label.length == 1) {
             when {
+                popupMode == "popup" && palette.popupStyle == KeyPopupStyle.RGB_NEON_POPUP -> {
+                    // Sleek AMOLED black popup with vivid neon glowing border and letter
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-52).dp)
+                            .size(48.dp)
+                            .zIndex(99f)
+                            .shadow(12.dp, RoundedCornerShape(12.dp), spotColor = rgbNeonColor)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF060606))
+                            .border(2.dp, rgbNeonColor, RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label.uppercase(),
+                            color = rgbNeonColor,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
                 popupMode == "popup" && palette.popupStyle == KeyPopupStyle.PUPPY_CHARACTER && label[0].isLetter() -> {
                     PuppyPopupCharacter(
                         char = label.uppercase(),

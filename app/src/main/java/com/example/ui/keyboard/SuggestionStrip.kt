@@ -113,6 +113,7 @@ fun SuggestionStrip(
     onTikTokRetry: () -> Unit = {},
     onTikTokOpenFile: (filePath: String, isAudio: Boolean) -> Unit = { _, _ -> },
     onTikTokShareFile: (filePath: String, isAudio: Boolean) -> Unit = { _, _ -> },
+    onTikTokPlayInKeyboard: (filePath: String, isAudio: Boolean, title: String) -> Unit = { _, _, _ -> },
     onTikTokToolbarClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -263,6 +264,7 @@ fun SuggestionStrip(
                         onRetry = onTikTokRetry,
                         onOpenFile = onTikTokOpenFile,
                         onShareFile = onTikTokShareFile,
+                        onPlayInKeyboard = onTikTokPlayInKeyboard,
                         modifier = Modifier.weight(1f)
                     )
                 } else {

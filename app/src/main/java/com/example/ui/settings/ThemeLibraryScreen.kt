@@ -540,6 +540,7 @@ fun MiniKeyboardMockup(
     val corner = RoundedCornerShape(palette.keyCornerRadius * 0.6f)
     val isStrawberry = palette.specialIconStyle == ThemeSpecialIconStyle.STRAWBERRY_DESSERT
     val isPuppy = palette.specialIconStyle == ThemeSpecialIconStyle.PUPPY_MINIMAL
+    val isRgbNeon = palette.specialIconStyle == ThemeSpecialIconStyle.RGB_NEON
 
     Box(
         modifier = modifier
@@ -557,11 +558,13 @@ fun MiniKeyboardMockup(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(3.dp)
             ) {
-                listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P").forEach { char ->
+                listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P").forEachIndexed { idx, char ->
                     MiniKey(
                         char = char,
                         modifier = Modifier.weight(1f),
                         palette = palette,
+                        colIndex = idx,
+                        totalCols = 10,
                         corner = corner
                     )
                 }
@@ -573,11 +576,13 @@ fun MiniKeyboardMockup(
                 horizontalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Spacer(modifier = Modifier.weight(0.4f))
-                listOf("A", "S", "D", "F", "G", "H", "J", "K", "L").forEach { char ->
+                listOf("A", "S", "D", "F", "G", "H", "J", "K", "L").forEachIndexed { idx, char ->
                     MiniKey(
                         char = char,
                         modifier = Modifier.weight(1f),
                         palette = palette,
+                        colIndex = idx,
+                        totalCols = 9,
                         corner = corner
                     )
                 }
@@ -595,14 +600,18 @@ fun MiniKeyboardMockup(
                     modifier = Modifier.weight(1.4f),
                     palette = palette,
                     isAction = true,
+                    colIndex = 0,
+                    totalCols = 10,
                     corner = corner
                 )
 
-                listOf("Z", "X", "C", "V", "B", "N", "M").forEach { char ->
+                listOf("Z", "X", "C", "V", "B", "N", "M").forEachIndexed { idx, char ->
                     MiniKey(
                         char = char,
                         modifier = Modifier.weight(1f),
                         palette = palette,
+                        colIndex = idx + 1,
+                        totalCols = 10,
                         corner = corner
                     )
                 }
@@ -612,6 +621,8 @@ fun MiniKeyboardMockup(
                     modifier = Modifier.weight(1.4f),
                     palette = palette,
                     isAction = true,
+                    colIndex = 9,
+                    totalCols = 10,
                     corner = corner
                 )
             }
@@ -627,6 +638,8 @@ fun MiniKeyboardMockup(
                     modifier = Modifier.weight(1.2f),
                     palette = palette,
                     isAction = true,
+                    colIndex = 0,
+                    totalCols = 10,
                     corner = corner
                 )
 
@@ -635,17 +648,20 @@ fun MiniKeyboardMockup(
                     modifier = Modifier.weight(1.0f),
                     palette = palette,
                     isAction = true,
+                    colIndex = 2,
+                    totalCols = 10,
                     corner = corner
                 )
 
                 // Spacebar
+                val spaceBorderColor = if (isRgbNeon) Color(0xFFEF4444) else palette.keyBorderColor
                 Box(
                     modifier = Modifier
                         .weight(4.0f)
                         .height(20.dp)
                         .clip(corner)
                         .background(palette.keyBackground)
-                        .border(palette.keyBorderWidth * 0.8f, palette.keyBorderColor, corner),
+                        .border(if (isRgbNeon) 1.5.dp else palette.keyBorderWidth * 0.8f, spaceBorderColor, corner),
                     contentAlignment = Alignment.Center
                 ) {
                     if (isPuppy) {
@@ -655,15 +671,24 @@ fun MiniKeyboardMockup(
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold
                         )
+                    } else if (isRgbNeon) {
+                        Text(
+                            text = "space",
+                            color = Color(0xFFEF4444),
+                            fontSize = 7.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 
                 MiniKey(
-                    char = if (isStrawberry) "🍰" else "↵",
+                    char = if (isStrawberry) "🍰" else if (isRgbNeon) "return" else "↵",
                     modifier = Modifier.weight(1.5f),
                     palette = palette,
                     isAction = true,
                     isPrimary = true,
+                    colIndex = 9,
+                    totalCols = 10,
                     corner = corner
                 )
             }
@@ -677,31 +702,40 @@ private fun MiniKey(
     modifier: Modifier = Modifier,
     palette: KeyboardPalette,
     corner: RoundedCornerShape,
+    colIndex: Int = -1,
+    totalCols: Int = 10,
     isAction: Boolean = false,
     isPrimary: Boolean = false
 ) {
+    val isRgbNeon = palette.specialIconStyle == ThemeSpecialIconStyle.RGB_NEON
+    val rgbColor = if (isRgbNeon) com.example.theme.RgbSpectrumUtils.getColorForKey(char, colIndex, totalCols) else palette.textColor
+
     val bg = when {
+        isRgbNeon -> palette.keyBackground
         isPrimary -> if (palette.specialIconStyle == ThemeSpecialIconStyle.PUPPY_MINIMAL) palette.keyActionBackground else palette.accentColor
         isAction -> palette.keyActionBackground
         else -> palette.keyBackground
     }
     val textCol = when {
+        isRgbNeon -> rgbColor
         isPrimary && palette.specialIconStyle != ThemeSpecialIconStyle.PUPPY_MINIMAL -> palette.onAccentColor
         else -> palette.textColor
     }
+    val borderCol = if (isRgbNeon) rgbColor else palette.keyBorderColor
+    val borderWidth = if (isRgbNeon) 1.5.dp else palette.keyBorderWidth * 0.7f
 
     Box(
         modifier = modifier
             .height(20.dp)
             .clip(corner)
             .background(bg)
-            .border(palette.keyBorderWidth * 0.7f, palette.keyBorderColor, corner),
+            .border(borderWidth, borderCol, corner),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = char,
             color = textCol,
-            fontSize = if (char.length > 2) 7.sp else 9.sp,
+            fontSize = if (char.length > 3) 6.sp else if (char.length > 2) 7.sp else 9.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1
         )

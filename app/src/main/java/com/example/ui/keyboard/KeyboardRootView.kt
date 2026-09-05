@@ -133,9 +133,14 @@ fun KeyboardRootView(
     var isToolbarExpanded by remember { mutableStateOf(false) }
     var holdProgress by remember { mutableFloatStateOf(0f) }
 
-    // TikTok Downloader State
+    // TikTok & Social Downloader State
     val tikTokManager = remember { TikTokDownloadManager.getInstance(context) }
     val tikTokState by tikTokManager.state.collectAsState()
+
+    // In-Keyboard Media Player State
+    var activeMediaPlayerPath by remember { mutableStateOf<String?>(null) }
+    var activeMediaPlayerIsAudio by remember { mutableStateOf(false) }
+    var activeMediaPlayerTitle by remember { mutableStateOf("") }
 
     // Auto-detect TikTok URL when clipboard items update
     LaunchedEffect(clipboardItems) {
@@ -640,6 +645,12 @@ fun KeyboardRootView(
                                         playFeedback()
                                         tikTokManager.shareFile(filePath, isAudio)
                                     },
+                                    onTikTokPlayInKeyboard = { filePath, isAudio, title ->
+                                        playFeedback()
+                                        activeMediaPlayerPath = filePath
+                                        activeMediaPlayerIsAudio = isAudio
+                                        activeMediaPlayerTitle = title
+                                    },
                                     onTikTokToolbarClick = {
                                         playFeedback()
                                         val latest = clipboardItems.firstOrNull()?.text
@@ -658,7 +669,24 @@ fun KeyboardRootView(
 
                     // Keyboard body
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        when (currentMode) {
+                        if (activeMediaPlayerPath != null) {
+                            InKeyboardMediaPlayer(
+                                filePath = activeMediaPlayerPath!!,
+                                isAudio = activeMediaPlayerIsAudio,
+                                title = activeMediaPlayerTitle,
+                                palette = palette,
+                                onClosePlayer = { activeMediaPlayerPath = null },
+                                onOpenExternal = { path, isAudio ->
+                                    playFeedback()
+                                    tikTokManager.openFile(path, isAudio)
+                                },
+                                onShare = { path, isAudio ->
+                                    playFeedback()
+                                    tikTokManager.shareFile(path, isAudio)
+                                }
+                            )
+                        } else {
+                            when (currentMode) {
                             KeyboardMode.EMOJI -> {
                                 EmojiKeyboardLayout(
                                     palette = palette,
@@ -716,6 +744,17 @@ fun KeyboardRootView(
                                                 else -> KeyboardMode.ENGLISH
                                             }
                                         )
+                                    },
+                                    onTriggerDownload = { url ->
+                                        playFeedback()
+                                        tikTokManager.onClipboardUpdated(url)
+                                        tikTokManager.onDownloadClicked()
+                                    },
+                                    onPlayInKeyboard = { filePath, isAudio, title ->
+                                        playFeedback()
+                                        activeMediaPlayerPath = filePath
+                                        activeMediaPlayerIsAudio = isAudio
+                                        activeMediaPlayerTitle = title
                                     }
                                 )
                             }
@@ -1213,6 +1252,7 @@ fun KeyboardRootView(
                             }
                         }
                     }
+                }
                 }
 
                 // Right dock control if in LEFT-handed mode

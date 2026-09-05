@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Videocam
@@ -63,6 +64,7 @@ fun TikTokSuggestionBar(
     onRetry: () -> Unit,
     onOpenFile: (filePath: String, isAudio: Boolean) -> Unit,
     onShareFile: (filePath: String, isAudio: Boolean) -> Unit,
+    onPlayInKeyboard: ((filePath: String, isAudio: Boolean, title: String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     if (state is TikTokDownloadState.Idle) return
@@ -86,11 +88,10 @@ fun TikTokSuggestionBar(
         ) {
             when (state) {
                 is TikTokDownloadState.LinkDetected -> {
-                    // Badge
-                    TikTokBadge(palette = palette)
+                    SocialPlatformBadge(platformName = state.platformName, palette = palette)
 
                     Text(
-                        text = "TikTok link detected",
+                        text = "${state.platformName} link detected",
                         color = palette.textColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
@@ -99,21 +100,21 @@ fun TikTokSuggestionBar(
                     )
 
                     // Download Action Chip
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Download,
                         label = "Download",
                         palette = palette,
                         isPrimary = true,
-                        tag = "tiktok_download_btn",
+                        tag = "social_download_btn",
                         onClick = onDownloadClicked
                     )
 
                     // Dismiss Button
-                    TikTokDismissButton(palette = palette, onClick = onDismiss)
+                    SocialDismissButton(palette = palette, onClick = onDismiss)
                 }
 
                 is TikTokDownloadState.ChoosingFormat -> {
-                    TikTokBadge(palette = palette)
+                    SocialPlatformBadge(platformName = state.platformName, palette = palette)
 
                     Text(
                         text = "Choose format:",
@@ -122,29 +123,29 @@ fun TikTokSuggestionBar(
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Videocam,
                         label = "Video",
                         palette = palette,
                         isPrimary = true,
-                        tag = "tiktok_format_video",
+                        tag = "social_format_video",
                         onClick = { onFormatChosen(false) }
                     )
 
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Audiotrack,
                         label = "Audio (MP3)",
                         palette = palette,
                         isPrimary = false,
-                        tag = "tiktok_format_audio",
+                        tag = "social_format_audio",
                         onClick = { onFormatChosen(true) }
                     )
 
-                    TikTokDismissButton(palette = palette, onClick = onDismiss)
+                    SocialDismissButton(palette = palette, onClick = onDismiss)
                 }
 
                 is TikTokDownloadState.ChoosingQuality -> {
-                    TikTokBadge(palette = palette)
+                    SocialPlatformBadge(platformName = state.platformName, palette = palette)
 
                     Text(
                         text = "Select quality:",
@@ -153,31 +154,31 @@ fun TikTokSuggestionBar(
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    TikTokActionButton(
-                        label = "480p",
+                    SocialActionButton(
+                        label = "SD (480p)",
                         palette = palette,
                         isPrimary = false,
-                        tag = "tiktok_quality_480p",
-                        onClick = { onQualityChosen("480p") }
+                        tag = "social_quality_480p",
+                        onClick = { onQualityChosen("480p SD") }
                     )
 
-                    TikTokActionButton(
-                        label = "720p (HD)",
+                    SocialActionButton(
+                        label = "HD (720p)",
                         palette = palette,
                         isPrimary = true,
-                        tag = "tiktok_quality_720p",
-                        onClick = { onQualityChosen("720p") }
+                        tag = "social_quality_720p",
+                        onClick = { onQualityChosen("720p HD") }
                     )
 
-                    TikTokActionButton(
-                        label = "1080p (FHD)",
+                    SocialActionButton(
+                        label = "Full HD (1080p)",
                         palette = palette,
                         isPrimary = true,
-                        tag = "tiktok_quality_1080p",
-                        onClick = { onQualityChosen("1080p") }
+                        tag = "social_quality_1080p",
+                        onClick = { onQualityChosen("1080p FHD") }
                     )
 
-                    TikTokDismissButton(palette = palette, onClick = onDismiss)
+                    SocialDismissButton(palette = palette, onClick = onDismiss)
                 }
 
                 is TikTokDownloadState.Resolving -> {
@@ -195,16 +196,16 @@ fun TikTokSuggestionBar(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    TikTokDismissButton(palette = palette, onClick = onCancel)
+                    SocialDismissButton(palette = palette, onClick = onCancel)
                 }
 
                 is TikTokDownloadState.Downloading -> {
-                    TikTokBadge(palette = palette)
+                    SocialPlatformBadge(platformName = state.platformName, palette = palette)
 
                     Column(
                         modifier = Modifier
                             .weight(1f, fill = false)
-                            .width(150.dp)
+                            .width(160.dp)
                             .padding(end = 4.dp),
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -225,7 +226,7 @@ fun TikTokSuggestionBar(
                                 color = palette.accentColor,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.testTag("tiktok_progress_text")
+                                modifier = Modifier.testTag("social_progress_text")
                             )
                         }
                         Spacer(modifier = Modifier.height(3.dp))
@@ -236,7 +237,7 @@ fun TikTokSuggestionBar(
                                     .fillMaxWidth()
                                     .height(4.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .testTag("tiktok_progress_bar"),
+                                    .testTag("social_progress_bar"),
                                 color = palette.accentColor,
                                 trackColor = palette.keyActionBackground
                             )
@@ -246,7 +247,7 @@ fun TikTokSuggestionBar(
                                     .fillMaxWidth()
                                     .height(4.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .testTag("tiktok_progress_bar"),
+                                    .testTag("social_progress_bar"),
                                 color = palette.accentColor,
                                 trackColor = palette.keyActionBackground
                             )
@@ -254,12 +255,12 @@ fun TikTokSuggestionBar(
                     }
 
                     // Cancel button
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Close,
                         label = "Cancel",
                         palette = palette,
                         isPrimary = false,
-                        tag = "tiktok_cancel_btn",
+                        tag = "social_cancel_btn",
                         onClick = onCancel
                     )
                 }
@@ -279,25 +280,37 @@ fun TikTokSuggestionBar(
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    TikTokActionButton(
+                    // IN-KEYBOARD PLAY BUTTON (No need to open other apps!)
+                    if (onPlayInKeyboard != null) {
+                        SocialActionButton(
+                            icon = Icons.Default.PlayArrow,
+                            label = "Play in Keyboard",
+                            palette = palette,
+                            isPrimary = true,
+                            tag = "social_play_keyboard_btn",
+                            onClick = { onPlayInKeyboard(state.filePath, state.isAudio, state.title) }
+                        )
+                    }
+
+                    SocialActionButton(
                         icon = Icons.Default.FolderOpen,
                         label = "Open",
                         palette = palette,
-                        isPrimary = true,
-                        tag = "tiktok_open_btn",
+                        isPrimary = false,
+                        tag = "social_open_btn",
                         onClick = { onOpenFile(state.filePath, state.isAudio) }
                     )
 
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Share,
                         label = "Share",
                         palette = palette,
                         isPrimary = false,
-                        tag = "tiktok_share_btn",
+                        tag = "social_share_btn",
                         onClick = { onShareFile(state.filePath, state.isAudio) }
                     )
 
-                    TikTokDismissButton(palette = palette, onClick = onDismiss)
+                    SocialDismissButton(palette = palette, onClick = onDismiss)
                 }
 
                 is TikTokDownloadState.Error -> {
@@ -316,16 +329,16 @@ fun TikTokSuggestionBar(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    TikTokActionButton(
+                    SocialActionButton(
                         icon = Icons.Default.Refresh,
                         label = "Retry",
                         palette = palette,
                         isPrimary = true,
-                        tag = "tiktok_retry_btn",
+                        tag = "social_retry_btn",
                         onClick = onRetry
                     )
 
-                    TikTokDismissButton(palette = palette, onClick = onDismiss)
+                    SocialDismissButton(palette = palette, onClick = onDismiss)
                 }
 
                 else -> {}
@@ -335,18 +348,24 @@ fun TikTokSuggestionBar(
 }
 
 @Composable
-private fun TikTokBadge(palette: KeyboardPalette) {
+private fun SocialPlatformBadge(platformName: String, palette: KeyboardPalette) {
+    val badgeColor = when {
+        platformName.contains("Facebook", ignoreCase = true) -> Color(0xFF1877F2)
+        platformName.contains("TikTok", ignoreCase = true) -> Color(0xFFFE2C55)
+        else -> palette.accentColor
+    }
+
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFFFE2C55).copy(alpha = 0.15f))
-            .border(1.dp, Color(0xFFFE2C55).copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+            .background(badgeColor.copy(alpha = 0.15f))
+            .border(1.dp, badgeColor.copy(alpha = 0.45f), RoundedCornerShape(6.dp))
             .padding(horizontal = 6.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "TikTok",
-            color = Color(0xFFFE2C55),
+            text = platformName,
+            color = badgeColor,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold
         )
@@ -354,7 +373,7 @@ private fun TikTokBadge(palette: KeyboardPalette) {
 }
 
 @Composable
-private fun TikTokActionButton(
+private fun SocialActionButton(
     label: String,
     palette: KeyboardPalette,
     isPrimary: Boolean,
@@ -362,58 +381,54 @@ private fun TikTokActionButton(
     onClick: () -> Unit,
     icon: ImageVector? = null
 ) {
-    val bg = if (isPrimary) palette.accentColor else palette.keyBackground
-    val fg = if (isPrimary) palette.onAccentColor else palette.textColor
-
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(bg)
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (isPrimary) palette.accentColor
+                else palette.keyActionBackground.copy(alpha = 0.7f)
+            )
             .clickable { onClick() }
-            .padding(horizontal = 9.dp, vertical = 5.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
             .testTag(tag),
         contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = fg,
+                    tint = if (isPrimary) Color.White else palette.textColor,
                     modifier = Modifier.size(13.dp)
                 )
             }
             Text(
                 text = label,
-                color = fg,
+                color = if (isPrimary) Color.White else palette.textColor,
                 fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Medium
             )
         }
     }
 }
 
 @Composable
-private fun TikTokDismissButton(
-    palette: KeyboardPalette,
-    onClick: () -> Unit
-) {
+private fun SocialDismissButton(palette: KeyboardPalette, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(24.dp)
             .clip(CircleShape)
-            .background(palette.keyBackground.copy(alpha = 0.8f))
             .clickable { onClick() }
-            .testTag("tiktok_dismiss_btn"),
+            .padding(4.dp)
+            .testTag("social_dismiss_btn"),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Close,
             contentDescription = "Dismiss",
-            tint = palette.textColor.copy(alpha = 0.7f),
+            tint = palette.secondaryTextColor,
             modifier = Modifier.size(14.dp)
         )
     }
