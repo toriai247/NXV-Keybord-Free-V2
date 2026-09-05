@@ -33,14 +33,18 @@ data class SocialMediaMetadata(
         val sb = StringBuilder()
         when (platform) {
             SocialPlatform.TIKTOK -> {
-                sb.appendLine("🎵 TikTok Video Summary")
+                sb.appendLine("🎵 [TikTok Video Card]")
             }
             SocialPlatform.FACEBOOK -> {
-                sb.appendLine("📘 Facebook Video Summary")
+                sb.appendLine("📘 [Facebook Video Card]")
             }
             else -> {
-                sb.appendLine("🎬 Video Summary")
+                sb.appendLine("🎬 [Video Card]")
             }
+        }
+
+        if (title.isNotBlank()) {
+            sb.appendLine("📌 $title")
         }
 
         if (!authorName.isNullOrBlank() || !authorUsername.isNullOrBlank()) {
@@ -54,10 +58,6 @@ data class SocialMediaMetadata(
             sb.appendLine("👤 Creator: $authorDisplay")
         }
 
-        if (title.isNotBlank()) {
-            sb.appendLine("📝 Title: $title")
-        }
-
         val stats = mutableListOf<String>()
         if (likesCount > 0) stats.add("❤️ ${formatMetric(likesCount)} Likes")
         if (commentsCount > 0) stats.add("💬 ${formatMetric(commentsCount)} Comments")
@@ -69,15 +69,21 @@ data class SocialMediaMetadata(
         }
 
         if (stats.isNotEmpty()) {
-            sb.appendLine("📊 " + stats.joinToString(" | "))
+            sb.appendLine("📊 " + stats.joinToString(" • "))
         }
 
         if (!musicTitle.isNullOrBlank()) {
             sb.appendLine("🎶 Sound: $musicTitle")
         }
 
-        sb.append("🔗 Watch here: $sourceUrl")
+        sb.append("🔗 Link: $sourceUrl")
         return sb.toString().trim()
+    }
+
+    fun formatCompactSummary(): String {
+        val author = if (!authorUsername.isNullOrBlank()) "@${authorUsername.removePrefix("@")}" else authorName ?: platform.displayName
+        val cleanTitle = title.take(60)
+        return "🎬 $cleanTitle (by $author)\n🔗 $sourceUrl"
     }
 
     private fun formatMetric(count: Long): String {

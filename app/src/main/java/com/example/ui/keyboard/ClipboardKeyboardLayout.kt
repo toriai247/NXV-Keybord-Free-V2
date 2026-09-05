@@ -38,12 +38,14 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,7 +88,8 @@ import okhttp3.OkHttpClient
 
 enum class ClipboardTab {
     ALL,
-    PINNED
+    PINNED,
+    DOWNLOADS
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -167,6 +170,7 @@ fun ClipboardKeyboardLayout(
         val matchesTab = when (selectedTab) {
             ClipboardTab.ALL -> true
             ClipboardTab.PINNED -> item.isPinned
+            ClipboardTab.DOWNLOADS -> true
         }
         val matchesSearch = searchQuery.isBlank() ||
                 item.text.contains(searchQuery.trim(), ignoreCase = true)
@@ -309,6 +313,41 @@ fun ClipboardKeyboardLayout(
                         }
                     }
                 }
+
+                // Tab: Downloads Browser
+                val isDownloadsSelected = selectedTab == ClipboardTab.DOWNLOADS
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (isDownloadsSelected) palette.accentColor.copy(alpha = 0.22f)
+                            else Color.Transparent
+                        )
+                        .clickable {
+                            selectedTab = ClipboardTab.DOWNLOADS
+                        }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .testTag("clipboard_tab_downloads"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Folder,
+                            contentDescription = "Downloads",
+                            tint = if (isDownloadsSelected) palette.accentColor else palette.secondaryTextColor,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = "Downloads",
+                            color = if (isDownloadsSelected) palette.accentColor else palette.secondaryTextColor,
+                            fontSize = 11.sp,
+                            fontWeight = if (isDownloadsSelected) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
             }
 
             // Right: Toolbar actions (Search, Sync, Clear, Close)
@@ -392,8 +431,23 @@ fun ClipboardKeyboardLayout(
             }
         }
 
-        // Search Bar (Visible when search is active)
-        AnimatedVisibility(visible = isSearchActive) {
+        if (selectedTab == ClipboardTab.DOWNLOADS) {
+            LocalMediaBrowserLayout(
+                palette = palette,
+                onCloseBrowser = onCloseClipboard,
+                onPlayMedia = { filePath, isAudio, title ->
+                    onPlayInKeyboard?.invoke(filePath, isAudio, title)
+                },
+                onPasteText = { text ->
+                    onPasteItem(text, autoCloseOnPaste)
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+        } else {
+            // Search Bar (Visible when search is active)
+            AnimatedVisibility(visible = isSearchActive) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1179,6 +1233,7 @@ fun ClipboardKeyboardLayout(
                     }
                 }
             }
+        }
         }
     }
 
