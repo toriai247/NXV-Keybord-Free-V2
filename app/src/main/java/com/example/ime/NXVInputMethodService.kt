@@ -42,6 +42,8 @@ import com.example.language.avro.AvroPhoneticEngine
 import com.example.suggestion.SuggestionEngine
 import com.example.suggestion.SuggestionItem
 import com.example.downloader.tiktok.TikTokDownloadManager
+import com.example.sticker.StickerItem
+import com.example.sticker.StickerManager
 import com.example.ui.keyboard.AutoSavePromptData
 import com.example.ui.keyboard.KeyboardRootView
 import kotlinx.coroutines.CoroutineScope
@@ -72,6 +74,8 @@ class NXVInputMethodService : InputMethodService(),
     private val avroEngine = AvroPhoneticEngine()
     private lateinit var suggestionEngine: SuggestionEngine
     private lateinit var feedbackManager: FeedbackManager
+    private lateinit var stickerManager: StickerManager
+    private var currentEditorInfo: EditorInfo? = null
 
     // Observable states
     private var currentMode by mutableStateOf(KeyboardMode.ENGLISH)
@@ -118,6 +122,7 @@ class NXVInputMethodService : InputMethodService(),
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         feedbackManager = FeedbackManager(this)
+        stickerManager = StickerManager.getInstance(this)
         val app = application as? NXVApplication ?: NXVApplication.instance
         suggestionEngine = SuggestionEngine(app.repository, this)
 
@@ -285,6 +290,9 @@ class NXVInputMethodService : InputMethodService(),
                         }
                     },
                     onSyncClipboard = { syncSystemClipboard() },
+                    onStickerSelected = { sticker ->
+                        stickerManager.sendSticker(sticker, currentInputConnection, currentEditorInfo)
+                    },
                     onSaveCredential = { service, user, pass ->
                         serviceScope.launch {
                             val app = application as? NXVApplication ?: NXVApplication.instance
@@ -437,6 +445,7 @@ class NXVInputMethodService : InputMethodService(),
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
+        currentEditorInfo = info
         attachLifecycleOwners(inputComposeView)
         if (!lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)

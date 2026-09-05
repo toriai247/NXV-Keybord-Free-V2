@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Dialpad
@@ -95,6 +96,7 @@ fun SuggestionStrip(
     onVaultClick: () -> Unit = {},
     onTextEditClick: () -> Unit = {},
     onNumberPadClick: () -> Unit = {},
+    onStickersClick: () -> Unit = {},
     onVoiceClick: () -> Unit = {},
     onThemesClick: () -> Unit = {},
     onThemesLongClick: () -> Unit = {},
@@ -421,6 +423,15 @@ fun SuggestionStrip(
                             isActive = tikTokState !is TikTokDownloadState.Idle,
                             tag = "toolbar_tiktok_downloader",
                             onClick = onTikTokToolbarClick
+                        )
+
+                        // 2.2 Stickers Action
+                        ActionToolChip(
+                            icon = Icons.Default.AutoAwesome,
+                            label = "Stickers",
+                            palette = palette,
+                            tag = "toolbar_stickers",
+                            onClick = onStickersClick
                         )
 
                         // 2. Text Edit Pad Action

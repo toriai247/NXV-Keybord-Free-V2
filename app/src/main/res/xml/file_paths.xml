@@ -4,4 +4,6 @@
     <external-files-path name="external_files_downloads" path="Download" />
     <external-files-path name="external_files" path="." />
     <files-path name="internal_files" path="." />
+    <cache-path name="sticker_cache" path="stickers" />
+    <cache-path name="all_cache" path="." />
 </paths>

@@ -42,6 +42,7 @@ fun EmojiKeyboardLayout(
     onEmojiSelected: (String) -> Unit,
     onBackspace: () -> Unit,
     onCloseEmoji: () -> Unit,
+    onSwitchToStickers: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedCategoryId by remember { mutableStateOf(EmojiData.CATEGORIES.first().id) }
@@ -129,7 +130,7 @@ fun EmojiKeyboardLayout(
             }
         }
 
-        // Bottom Bar (ABC switch, Backspace)
+        // Bottom Bar (ABC switch, Stickers switch, Backspace)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,20 +140,43 @@ fun EmojiKeyboardLayout(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(palette.keyActionBackground)
-                    .clickable { onCloseEmoji() }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .testTag("emoji_close_btn"),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "ABC",
-                    color = palette.textColor,
-                    fontSize = 14.sp
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(palette.keyActionBackground)
+                        .clickable { onCloseEmoji() }
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                        .testTag("emoji_close_btn"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "ABC",
+                        color = palette.textColor,
+                        fontSize = 14.sp,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                    )
+                }
+
+                if (onSwitchToStickers != null) {
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(palette.keyBackground.copy(alpha = 0.4f))
+                            .clickable { onSwitchToStickers() }
+                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                            .testTag("emoji_to_stickers_btn"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🐱 Stickers",
+                            color = palette.textColor,
+                            fontSize = 12.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                        )
+                    }
+                }
             }
 
             KeyboardKeyView(

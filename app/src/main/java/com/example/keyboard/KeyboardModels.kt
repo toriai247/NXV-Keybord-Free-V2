@@ -7,6 +7,7 @@ enum class KeyboardMode {
     NUMBERS,
     SYMBOLS,
     EMOJI,
+    STICKERS,
     CLIPBOARD,
     VAULT,
     TEXT_EDIT,

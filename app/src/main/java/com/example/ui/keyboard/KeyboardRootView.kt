@@ -59,6 +59,7 @@ import com.example.downloader.tiktok.TikTokDownloadState
 import com.example.data.entity.ClipboardItem
 import com.example.data.entity.SavedCredential
 import com.example.data.preferences.KeyboardSettings
+import com.example.sticker.StickerItem
 import com.example.ime.FeedbackManager
 import com.example.keyboard.KeyboardMode
 import com.example.keyboard.OneHandedMode
@@ -94,6 +95,7 @@ fun KeyboardRootView(
     onDeleteClipboard: (Long) -> Unit,
     onClearClipboard: () -> Unit,
     onSyncClipboard: () -> Unit = {},
+    onStickerSelected: (StickerItem) -> Unit = {},
     onSaveCredential: (service: String, user: String, pass: String) -> Unit = { _, _, _ -> },
     onDeleteCredential: (Long) -> Unit = {},
     onTogglePinCredential: (SavedCredential) -> Unit = {},
@@ -448,8 +450,8 @@ fun KeyboardRootView(
                 Column(
                     modifier = Modifier.weight(animWidthFraction)
                 ) {
-                    // Suggestion Strip (shown unless in Emoji, Clipboard, or Vault mode)
-                    if (currentMode != KeyboardMode.EMOJI && currentMode != KeyboardMode.CLIPBOARD && currentMode != KeyboardMode.VAULT) {
+                    // Suggestion Strip (shown unless in Emoji, Stickers, Clipboard, or Vault mode)
+                    if (currentMode != KeyboardMode.EMOJI && currentMode != KeyboardMode.STICKERS && currentMode != KeyboardMode.CLIPBOARD && currentMode != KeyboardMode.VAULT) {
                         if (settings.suggestionsEnabled) {
                             if (palette.themeId == "reference_minimal" && settings.uiMode == "original") {
                                 ReferenceOriginalToolbar(
@@ -558,6 +560,10 @@ fun KeyboardRootView(
                                     onNumberPadClick = {
                                         playFeedback()
                                         onModeSwitch(KeyboardMode.NUMBER_PAD)
+                                    },
+                                    onStickersClick = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.STICKERS)
                                     },
                                     onVoiceClick = {
                                         playFeedback()
@@ -699,6 +705,38 @@ fun KeyboardRootView(
                                         onDelete()
                                     },
                                     onCloseEmoji = {
+                                        playFeedback()
+                                        onModeSwitch(
+                                            when (settings.currentLanguage) {
+                                                "bangla" -> KeyboardMode.BANGLA
+                                                "avro" -> KeyboardMode.AVRO
+                                                else -> KeyboardMode.ENGLISH
+                                            }
+                                        )
+                                    },
+                                    onSwitchToStickers = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.STICKERS)
+                                    }
+                                )
+                            }
+
+                            KeyboardMode.STICKERS -> {
+                                StickerKeyboardLayout(
+                                    palette = palette,
+                                    onStickerSelected = { sticker ->
+                                        playFeedback()
+                                        onStickerSelected(sticker)
+                                    },
+                                    onSwitchToEmoji = {
+                                        playFeedback()
+                                        onModeSwitch(KeyboardMode.EMOJI)
+                                    },
+                                    onBackspace = {
+                                        playFeedback()
+                                        onDelete()
+                                    },
+                                    onCloseStickers = {
                                         playFeedback()
                                         onModeSwitch(
                                             when (settings.currentLanguage) {
